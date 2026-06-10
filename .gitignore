@@ -7,3 +7,4 @@ __pycache__/
 MUJOCO_LOG.TXT
 ;
 logdir/
+dreamerv3_checkpoints/
