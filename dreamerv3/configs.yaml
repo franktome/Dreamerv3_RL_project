@@ -205,7 +205,7 @@ debug:
   batch_size: 8
   batch_length: 10
   report_length: 5
-  jax: {platform: cpu, debug: True, prealloc: False}
+  jax: {platform: cuda, debug: True, prealloc: False} # platfrom을 cpu에서 cuda로 변경
   run: {envs: 4, report_every: 10, log_every: 5, save_every: 15, train_ratio: 8, debug: True}
   replay.size: 1e4
   agent:
@@ -218,3 +218,57 @@ debug:
     .*\.hidden: 3
     .*\.blocks: 4
     .*\.depth: 2
+
+highway:
+  task: highway_fast-v0
+  run: {steps: 5e5, train_ratio: 32}
+  batch_size: 16
+  batch_length: 64
+
+highway_base:
+  run: {steps: 5e5, train_ratio: 32, save_every: 120}
+  batch_size: 16
+  batch_length: 64
+
+highway_highway-v0:
+  task: highway_highway-v0
+  run: {steps: 5e5, train_ratio: 32, save_every: 120}
+  batch_size: 16
+  batch_length: 64
+
+highway_roundabout-v0:
+  task: highway_roundabout-v0
+  run: {steps: 5e5, train_ratio: 32, save_every: 120}
+  batch_size: 16
+  batch_length: 64
+
+highway_intersection-v0:
+  task: highway_intersection-v0
+  run: {steps: 5e5, train_ratio: 32, save_every: 120}
+  batch_size: 16
+  batch_length: 64
+
+highway_merge-v0:
+  task: highway_merge-v0
+  run: {steps: 5e5, train_ratio: 32, save_every: 120}
+  batch_size: 16
+  batch_length: 64
+
+highway_racetrack-v0:
+  task: highway_racetrack-v0
+  run: {steps: 5e5, train_ratio: 32, save_every: 120}
+  batch_size: 16
+  batch_length: 64
+
+highway_exit-v0:
+  task: highway_exit-v0
+  run: {steps: 5e5, train_ratio: 32, save_every: 120}
+  batch_size: 16
+  batch_length: 64
+
+highway_u-turn-v0:
+  task: highway_u-turn-v0
+  run: {steps: 5e5, train_ratio: 32, save_every: 120}
+  batch_size: 16
+  batch_length: 64
+
