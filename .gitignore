@@ -8,3 +8,8 @@ MUJOCO_LOG.TXT
 ;
 logdir/
 dreamerv3_checkpoints/
+scores_cache/
+report/
+highlights/
+merge_notebook.py
+test_highway_cells.py

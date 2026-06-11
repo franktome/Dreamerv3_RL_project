@@ -17,3 +17,7 @@ optax
 portal>=3.5.0
 scope>=0.4.4
 tqdm
+huggingface_hub
+imageio
+matplotlib
+pandas
