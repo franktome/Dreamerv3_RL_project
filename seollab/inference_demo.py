@@ -126,9 +126,19 @@ def plot_local_minecraft_scores(
     return summary
 
 
-def plot_atari_hns_distribution(cfg: PathConfig, show: bool = True) -> pd.DataFrame:
+def plot_atari_comparison(cfg: PathConfig, show: bool = True) -> pd.DataFrame:
+    """Atari V2 vs V3 curves (report/atari_v2_v3.png) + HNS distribution."""
+    compare = viz.plot_atari_v2_v3(cfg, show=show)
+    plot_atari_hns_distribution(cfg, show=show, compare=compare)
+    return compare
+
+
+def plot_atari_hns_distribution(
+    cfg: PathConfig, show: bool = True, compare: pd.DataFrame | None = None,
+) -> pd.DataFrame:
     """Per-game HNS distribution for DreamerV2 vs DreamerV3 (official scores)."""
-    compare = viz.plot_atari_v2_v3(cfg, show=False)
+    if compare is None:
+        compare = viz.plot_atari_v2_v3(cfg, show=False)
 
     out_dir = cfg.report_dir / 'inference'
     out_dir.mkdir(parents=True, exist_ok=True)

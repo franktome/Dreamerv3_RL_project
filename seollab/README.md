@@ -1,6 +1,6 @@
 # seollab — DreamerV2/V3 evaluation helpers
 
-Used by `highway_inference.ipynb` (imported from GitHub branch `kihyun-dreamerv3`).
+Used by `highway_inference_update.ipynb` (imported from GitHub branch `dreamerv2-v3`).
 
 ## Modules
 
@@ -17,12 +17,12 @@ Used by `highway_inference.ipynb` (imported from GitHub branch `kihyun-dreamerv3
 ## Publish to GitHub
 
 ```bash
-# On franktome/Dreamerv3_RL_project, branch kihyun-dreamerv3
-git checkout -b kihyun-dreamerv3
+# On franktome/Dreamerv3_RL_project, branch dreamerv2-v3
+git checkout -b dreamerv2-v3
 cp -r /path/to/seollab ./
 git add seollab/
 git commit -m "Add seollab evaluation package for notebook import"
-git push -u origin kihyun-dreamerv3
+git push -u origin dreamerv2-v3
 ```
 
 Author: SeolLab (seolpark731@gmail.com)
