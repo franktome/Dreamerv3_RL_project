@@ -2,7 +2,50 @@
 
 import os
 import pathlib
+import shutil
 from dataclasses import dataclass, field
+
+
+def ensure_tmpdir(workspace: pathlib.Path | None = None, min_free_gb: float = 1.0) -> pathlib.Path:
+    """Use a writable temp dir when /tmp is full (JAX/XLA writes PTX there)."""
+    min_free = int(min_free_gb * 1024**3)
+
+    def _free(path: pathlib.Path) -> int:
+        try:
+            return shutil.disk_usage(path).free
+        except OSError:
+            return 0
+
+    current = pathlib.Path(os.environ.get('TMPDIR', '/tmp'))
+    if _free(current) >= min_free:
+        return current
+
+    candidates = []
+    if workspace is not None:
+        candidates.append(pathlib.Path(workspace).resolve() / 'tmp')
+    alt_home = pathlib.Path('/mnt/server12_hard0/kiseol/tmp')
+    if alt_home.parent.exists():
+        candidates.append(alt_home)
+    candidates.append(pathlib.Path.home() / 'tmp')
+
+    for candidate in candidates:
+        try:
+            candidate.mkdir(parents=True, exist_ok=True)
+        except OSError:
+            continue
+        if _free(candidate) >= min_free // 2:
+            os.environ['TMPDIR'] = str(candidate)
+            os.environ['TEMP'] = str(candidate)
+            os.environ['TMP'] = str(candidate)
+            print(f'TMPDIR -> {candidate} (was {current}, low disk space)')
+            return candidate
+
+    candidate.mkdir(parents=True, exist_ok=True)
+    os.environ['TMPDIR'] = str(candidate)
+    os.environ['TEMP'] = str(candidate)
+    os.environ['TMP'] = str(candidate)
+    print(f'TMPDIR -> {candidate} (fallback)')
+    return candidate
 
 
 @dataclass
@@ -35,6 +78,7 @@ class PathConfig:
         return self.minecraft_logdir / 'ckpt'
 
     def apply_env(self) -> None:
+        ensure_tmpdir(self.workspace)
         os.environ['CUDA_VISIBLE_DEVICES'] = str(self.gpu)
         os.environ['XLA_PYTHON_CLIENT_PREALLOCATE'] = 'false'
         os.environ['JAX_PLATFORMS'] = 'cuda'
