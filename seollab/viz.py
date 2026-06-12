@@ -51,8 +51,8 @@ def plot_minecraft_baselines(cfg: PathConfig, show: bool = True) -> dict:
                 valid = [i for i, xv in enumerate(run['xs']) if xv <= x]
                 if not valid:
                     continue
-                idx = max(valid)
-                succ.append(1.0 if run['ys'][idx] >= 12 else 0.0)
+                best = max(run['ys'][i] for i in valid)
+                succ.append(1.0 if best >= 12 else 0.0)
             rates.append(np.mean(succ) if succ else np.nan)
         return xs, np.array(rates)
 
@@ -64,7 +64,7 @@ def plot_minecraft_baselines(cfg: PathConfig, show: bool = True) -> dict:
         mask = ~np.isnan(rates)
         axes[0].plot(xs[mask] / 1e6, rates[mask] * 100, label=name, color=colors[name], lw=2)
         summary[name] = float(np.mean([1.0 if max(r['ys']) >= 12 else 0.0 for r in rs]) * 100)
-    axes[0].set(xlabel='Steps (M)', ylabel='Diamond success (%)', title='Minecraft — official scores')
+    axes[0].set(xlabel='Steps (M)', ylabel='Task success (%)', title='Minecraft — official scores')
     axes[0].legend()
     axes[0].grid(alpha=0.3)
     for name, rs in runs.items():

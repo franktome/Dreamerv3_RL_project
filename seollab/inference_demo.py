@@ -51,7 +51,8 @@ def analyze_training_health(logdir: Path) -> dict:
             MILESTONE_LABELS[min(out['max_milestone'], len(MILESTONE_LABELS) - 1)]
             if ep_scores else 'none'
         )
-        out['diamond_rate'] = sum(1 for s in ep_scores if s >= 12) / len(ep_scores) * 100
+        out['mean_episode_score'] = float(np.mean(ep_scores))
+        out['max_episode_score'] = float(max(ep_scores))
 
     ckpt = logdir / 'ckpt'
     if ckpt.exists():
@@ -88,14 +89,15 @@ def plot_local_minecraft_scores(
     fig, axes = plt.subplots(1, 2, figsize=(13, 4.5))
     axes[0].hist(df['milestone'], bins=np.arange(-0.5, 13.5, 1), color='#2ca02c', alpha=0.85, edgecolor='white')
     axes[0].set(
-        xlabel='Milestone index (12 = diamond)',
+        xlabel='Milestone index',
         ylabel='Episode count',
         title='Local DreamerV3 — milestone distribution',
     )
     axes[0].set_xticks(range(0, 13, 2))
 
-    axes[1].scatter(df['step'] / 1e6, df['score'], alpha=0.6, s=28, c='#1f77b4')
-    axes[1].axhline(12, color='gray', ls='--', alpha=0.5, label='diamond threshold')
+    axes[1].scatter(df['step'] / 1e6, df['score'], alpha=0.6, s=28, c='#1f77b4', label='Episodes')
+    rolling = df['score'].rolling(5, min_periods=1).mean()
+    axes[1].plot(df['step'] / 1e6, rolling, color='black', lw=1.5, alpha=0.6, label='Rolling mean (5 ep)')
     axes[1].set(xlabel='Training steps (M)', ylabel='Episode score', title='Episode scores over training')
     axes[1].legend()
     axes[1].grid(alpha=0.3)
@@ -120,9 +122,8 @@ def plot_local_minecraft_scores(
         'png': str(png),
         'episodes': len(df),
         'max_milestone': int(df['milestone'].max()),
-        'diamond_rate_pct': float((df['milestone'] >= 12).mean() * 100),
+        'mean_score': float(df['score'].mean()),
     }
-    print(summary)
     return summary
 
 

@@ -50,12 +50,14 @@ def train(
     cfg.apply_env()
     logdir.mkdir(parents=True, exist_ok=True)
 
-    if mode == 'full':
+    # 'full' is a train-mode alias only — never pass it as a config preset name.
+    if mode in ('full', 'size200m'):
         presets = ['minecraft', 'size200m']
     elif mode == 'debug':
         presets = ['minecraft', 'debug']
     else:
         presets = ['minecraft', mode]
+    assert 'full' not in presets, presets
 
     cmd = [
         sys.executable, str(cfg.dreamerv3_root / 'dreamerv3' / 'main.py'),
@@ -151,7 +153,8 @@ def infer(
             out[k] = np.int32(v[0]) if k == 'action' else v[0]
         return out
 
-    frames, reached = [], set()
+    frames, milestone_frames = [], []
+    reached = []
     carry = agent.init_policy(1)
     act = {'reset': True}
     if 'action' in env.act_space:
@@ -159,11 +162,17 @@ def infer(
     obs = env.step(act)
     total_reward, last_score = 0.0, 0
 
+    def _capture_frame():
+        if 'image' not in obs:
+            return None
+        img = np.asarray(obs['image'])
+        if img.dtype != np.uint8:
+            img = np.clip(img * 255, 0, 255).astype(np.uint8)
+        return img
+
     for step in range(max_steps):
-        if 'image' in obs and step % 3 == 0:
-            img = np.asarray(obs['image'])
-            if img.dtype != np.uint8:
-                img = np.clip(img * 255, 0, 255).astype(np.uint8)
+        img = _capture_frame()
+        if img is not None and step % 3 == 0:
             frames.append(img)
         policy_obs = {k: v for k, v in obs.items() if not k.startswith('log/')}
         carry, act, _ = agent.policy(carry, batch_obs(policy_obs), mode='eval')
@@ -174,7 +183,12 @@ def infer(
         score = int(round(total_reward))
         if score > last_score:
             for idx in range(last_score, min(score, len(MILESTONES))):
-                reached.add(MILESTONES[idx])
+                name = MILESTONES[idx]
+                if name not in reached:
+                    reached.append(name)
+                    snap = _capture_frame()
+                    if snap is not None:
+                        milestone_frames.append((name, snap))
             last_score = score
         if bool(np.asarray(obs.get('is_last', False))):
             act = {'reset': True}
@@ -183,16 +197,29 @@ def infer(
             obs = env.step(act)
 
     env.close()
+    out_dir = gif_path.parent
+    out_dir.mkdir(parents=True, exist_ok=True)
     if frames:
         imageio.mimsave(str(gif_path), frames, duration=125)
-    got_diamond = 'diamond' in reached or last_score >= 12
+    strip_path = out_dir / 'minecraft_milestone_strip.gif'
+    if milestone_frames:
+        from PIL import Image, ImageDraw
+        tiles = []
+        for name, img in milestone_frames:
+            tile = Image.fromarray(img).resize((128, 128))
+            draw = ImageDraw.Draw(tile)
+            draw.rectangle([0, 0, 127, 14], fill=(0, 0, 0))
+            draw.text((4, 1), name[:14], fill=(255, 255, 255))
+            tiles.append(np.asarray(tile))
+        strip = np.concatenate(tiles, axis=1)
+        imageio.mimsave(str(strip_path), [strip], duration=500)
     result = {
         'ok': True,
         'gif': str(gif_path),
+        'strip_gif': str(strip_path) if milestone_frames else '',
         'steps': step + 1,
-        'reward': total_reward,
-        'milestones': sorted(reached),
-        'diamond': got_diamond,
+        'reward': round(total_reward, 3),
+        'max_milestone': MILESTONES[min(last_score, len(MILESTONES) - 1)] if last_score >= 0 else 'none',
+        'milestones_reached': reached,
     }
-    print(result)
     return result

@@ -2,56 +2,29 @@
 
 import os
 import pathlib
-import shutil
+import tempfile
 from dataclasses import dataclass, field
 
 
-def ensure_tmpdir(workspace: pathlib.Path | None = None, min_free_gb: float = 1.0) -> pathlib.Path:
-    """Use a writable temp dir when /tmp is full (JAX/XLA writes PTX there)."""
-    min_free = int(min_free_gb * 1024**3)
-
-    def _free(path: pathlib.Path) -> int:
-        try:
-            return shutil.disk_usage(path).free
-        except OSError:
-            return 0
-
-    current = pathlib.Path(os.environ.get('TMPDIR', '/tmp'))
-    if _free(current) >= min_free:
-        return current
-
-    candidates = []
-    if workspace is not None:
-        candidates.append(pathlib.Path(workspace).resolve() / 'tmp')
-    alt_home = pathlib.Path('/mnt/server12_hard0/kiseol/tmp')
-    if alt_home.parent.exists():
-        candidates.append(alt_home)
-    candidates.append(pathlib.Path.home() / 'tmp')
-
-    for candidate in candidates:
-        try:
-            candidate.mkdir(parents=True, exist_ok=True)
-        except OSError:
-            continue
-        if _free(candidate) >= min_free // 2:
-            os.environ['TMPDIR'] = str(candidate)
-            os.environ['TEMP'] = str(candidate)
-            os.environ['TMP'] = str(candidate)
-            print(f'TMPDIR -> {candidate} (was {current}, low disk space)')
-            return candidate
-
-    candidate.mkdir(parents=True, exist_ok=True)
-    os.environ['TMPDIR'] = str(candidate)
-    os.environ['TEMP'] = str(candidate)
-    os.environ['TMP'] = str(candidate)
-    print(f'TMPDIR -> {candidate} (fallback)')
-    return candidate
+def ensure_scratch_dirs(workspace: pathlib.Path) -> pathlib.Path:
+    """Redirect temp/JAX cache off root /tmp (often full on shared servers)."""
+    root = pathlib.Path(workspace).resolve()
+    tmpdir = root / 'tmp'
+    tmpdir.mkdir(parents=True, exist_ok=True)
+    for key in ('TMPDIR', 'TEMP', 'TMP'):
+        os.environ[key] = str(tmpdir)
+    jax_cache = pathlib.Path(workspace).resolve() / '.jax_cache'
+    jax_cache.mkdir(parents=True, exist_ok=True)
+    os.environ['JAX_COMPILATION_CACHE_DIR'] = str(jax_cache)
+    tempfile.tempdir = str(tmpdir)
+    return tmpdir
 
 
 @dataclass
 class PathConfig:
     workspace: pathlib.Path
     dreamerv3_root: pathlib.Path
+    dreamerv2_root: pathlib.Path
     conda_env: pathlib.Path | None = None
     scores_cache: pathlib.Path = field(init=False)
     report_dir: pathlib.Path = field(init=False)
@@ -64,6 +37,7 @@ class PathConfig:
     def __post_init__(self):
         self.workspace = pathlib.Path(self.workspace).resolve()
         self.dreamerv3_root = pathlib.Path(self.dreamerv3_root).resolve()
+        self.dreamerv2_root = pathlib.Path(self.dreamerv2_root).resolve()
         self.scores_cache = self.workspace / 'scores_cache'
         self.report_dir = self.workspace / 'report'
         self.highlights_dir = self.workspace / 'highlights'
@@ -77,12 +51,19 @@ class PathConfig:
     def minecraft_ckpt(self) -> pathlib.Path:
         return self.minecraft_logdir / 'ckpt'
 
-    def apply_env(self) -> None:
-        ensure_tmpdir(self.workspace)
+    def atari_logdir(self, game: str, version: str) -> pathlib.Path:
+        return self.dreamerv3_root / 'logdir' / f'atari_{game}_{version}'
+
+    def apply_env(self, mem_fraction: float | None = None) -> None:
+        ensure_scratch_dirs(self.workspace)
         os.environ['CUDA_VISIBLE_DEVICES'] = str(self.gpu)
         os.environ['XLA_PYTHON_CLIENT_PREALLOCATE'] = 'false'
         os.environ['JAX_PLATFORMS'] = 'cuda'
         os.environ['DISPLAY'] = self.display
+        os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
+        os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+        if mem_fraction is not None:
+            os.environ['XLA_PYTHON_CLIENT_MEM_FRACTION'] = str(mem_fraction)
         if self.conda_env:
             tools = self.conda_env.parent.parent / 'tools' / 'usr' / 'bin'
             if tools.exists():
@@ -91,6 +72,13 @@ class PathConfig:
             if jre.exists():
                 os.environ['JAVA_HOME'] = str(self.conda_env)
                 os.environ['PATH'] = f'{jre}:{os.environ.get("PATH", "")}'
+
+
+def _resolve_dreamerv2_root(ws: pathlib.Path) -> pathlib.Path:
+    candidate = ws / 'vendor' / 'dreamerv2'
+    if (candidate / 'dreamerv2' / 'train.py').exists():
+        return candidate
+    return candidate
 
 
 def _resolve_dreamerv3_root(ws: pathlib.Path) -> pathlib.Path:
@@ -108,10 +96,8 @@ def default_paths(
     ws = pathlib.Path(workspace or pathlib.Path.cwd())
     home = pathlib.Path.home()
     d3 = _resolve_dreamerv3_root(ws)
+    d2 = _resolve_dreamerv2_root(ws)
     conda = home / '.conda' / 'envs' / 'dreamerv3'
-    alt = pathlib.Path('/mnt/server12_hard0/kiseol/.conda/envs/dreamerv3')
-    if not conda.exists() and alt.exists():
-        conda = alt
     if not conda.exists():
         conda = None
-    return PathConfig(workspace=ws, dreamerv3_root=d3, conda_env=conda, gpu=gpu)
+    return PathConfig(workspace=ws, dreamerv3_root=d3, dreamerv2_root=d2, conda_env=conda, gpu=gpu)
