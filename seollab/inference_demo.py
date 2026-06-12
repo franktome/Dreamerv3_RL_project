@@ -62,6 +62,49 @@ def analyze_training_health(logdir: Path) -> dict:
     return out
 
 
+def training_milestone_chains(logdir: Path, top_n: int = 3) -> list[dict]:
+    """Top training episodes as milestone chains (from scores.jsonl)."""
+    scores_path = Path(logdir) / 'scores.jsonl'
+    if not scores_path.exists():
+        return []
+    rows = [
+        json.loads(line)
+        for line in scores_path.read_text().strip().splitlines()
+        if line.strip()
+    ]
+    ranked = sorted(
+        rows,
+        key=lambda r: float(r.get('episode/score', r.get('score', 0))),
+        reverse=True,
+    )
+    chains = []
+    for row in ranked[:top_n]:
+        score = float(row.get('episode/score', row.get('score', 0)))
+        idx = max(0, min(int(round(score)), len(MILESTONE_LABELS) - 1))
+        chains.append({
+            'score': score,
+            'step': int(row.get('step', 0)),
+            'milestones': MILESTONE_LABELS[: idx + 1],
+        })
+    return chains
+
+
+def ensure_minecraft_training_plots(cfg: PathConfig, logdir: Path | None = None) -> dict:
+    """Refresh local Minecraft training PNGs used in the notebook."""
+    from .viz_advanced import plot_minecraft_local_overlay
+
+    logdir = Path(logdir or cfg.minecraft_full_logdir)
+    out = {'scores_png': '', 'overlay_png': ''}
+    if (logdir / 'scores.jsonl').exists():
+        scores = plot_local_minecraft_scores(cfg, logdir=logdir, show=False)
+        if scores.get('ok'):
+            out['scores_png'] = scores.get('png', '')
+    overlay = plot_minecraft_local_overlay(cfg, logdir, show=False)
+    if overlay:
+        out['overlay_png'] = overlay
+    return out
+
+
 def plot_local_minecraft_scores(
     cfg: PathConfig,
     logdir: Path | None = None,
@@ -176,6 +219,7 @@ def run_minecraft_env_gif(
     logdir: Path | None = None,
     max_steps: int = 800,
     train_mode: str = 'full',
+    seed: int | None = None,
 ) -> dict:
     """Policy rollout GIF from latest checkpoint (safe while training)."""
     logdir = Path(logdir or cfg.minecraft_full_logdir)
@@ -184,7 +228,26 @@ def run_minecraft_env_gif(
     gif = out_dir / 'minecraft_diamond_rollout.gif'
     return minecraft.infer(
         cfg, logdir=logdir, gif_path=gif,
-        max_steps=max_steps, train_mode=train_mode,
+        max_steps=max_steps, train_mode=train_mode, seed=seed,
+    )
+
+
+def run_minecraft_multi_rollouts(
+    cfg: PathConfig,
+    logdir: Path | None = None,
+    n_rollouts: int = 6,
+    max_steps: int = 3600,
+    seeds: list[int] | None = None,
+    top_k: int = 3,
+) -> dict:
+    """Several rollout GIFs; best milestone chain copied to main inference paths."""
+    return minecraft.infer_multi_rollouts(
+        cfg,
+        logdir=logdir or cfg.minecraft_full_logdir,
+        n_rollouts=n_rollouts,
+        max_steps=max_steps,
+        seeds=seeds,
+        top_k=top_k,
     )
 
 

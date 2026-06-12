@@ -1,6 +1,6 @@
 # seollab — DreamerV2/V3 evaluation helpers
 
-Used by `highway_inference_update.ipynb` (imported from GitHub branch `dreamerv2-v3`).
+Used by notebooks via **`dvbench`** (thin re-export of this package) on GitHub branch `dreamerv2-v3`.
 
 ## Modules
 

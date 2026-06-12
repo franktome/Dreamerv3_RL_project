@@ -85,6 +85,9 @@ def run_inference_and_anim(
             for preset in ('fast', 'sluggish'):
                 out['anim'][game][preset] = atari_anim.run_anim_compare(
                     cfg, game, preset=preset, max_steps=max_steps)
+    if run_anim and out['anim']:
+        from . import atari_anim_ui
+        atari_anim_ui.merge_anim_results(cfg, out['anim'])
     return out
 
 

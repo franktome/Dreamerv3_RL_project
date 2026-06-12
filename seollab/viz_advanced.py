@@ -128,16 +128,20 @@ def plot_minecraft_local_overlay(cfg: PathConfig, logdir: Path, show: bool = Fal
 def plot_atari_heatmap(cfg: PathConfig, compare: pd.DataFrame | None = None, show: bool = False) -> str:
     compare = compare if compare is not None else load_atari_compare(cfg)
     c = compare.sort_values('delta', ascending=True)
-    data = c[['DreamerV2', 'DreamerV3']].values
-    fig, ax = plt.subplots(figsize=(6, 14))
-    im = ax.imshow(data, aspect='auto', cmap='RdYlGn', vmin=-2, vmax=10)
-    ax.set_yticks(range(len(c)))
-    ax.set_yticklabels([t.replace('atari_', '') for t in c.index], fontsize=7)
-    ax.set_xticks([0, 1])
-    ax.set_xticklabels(['DreamerV2', 'DreamerV3'])
-    ax.set_title('Atari 57 — HNS per game @ 50M steps')
-    plt.colorbar(im, ax=ax, label='HNS')
-    plt.tight_layout()
+    mid = (len(c) + 1) // 2
+    chunks = [c.iloc[:mid], c.iloc[mid:]]
+
+    fig, axes = plt.subplots(1, 2, figsize=(9, 7.5), constrained_layout=True)
+    im = None
+    for ax, chunk in zip(axes, chunks):
+        data = chunk[['DreamerV2', 'DreamerV3']].values
+        im = ax.imshow(data, aspect='auto', cmap='RdYlGn', vmin=-2, vmax=10)
+        ax.set_yticks(range(len(chunk)))
+        ax.set_yticklabels([t.replace('atari_', '') for t in chunk.index], fontsize=6)
+        ax.set_xticks([0, 1])
+        ax.set_xticklabels(['DreamerV2', 'DreamerV3'], fontsize=8)
+    fig.suptitle('Atari 57 — HNS per game @ 50M steps', fontsize=11)
+    fig.colorbar(im, ax=axes.ravel().tolist(), shrink=0.85, label='HNS')
     out = cfg.report_dir / 'atari_hns_heatmap.png'
     fig.savefig(out, dpi=150, bbox_inches='tight')
     if show:
@@ -215,28 +219,39 @@ def plot_atari_10game_bars(cfg: PathConfig, games: list[str], compare: pd.DataFr
 
 
 def plot_atari_10game_panels(cfg: PathConfig, games: list[str], show: bool = False) -> str:
-    """Side-by-side score trajectories: V2 (left column) vs V3 (right column) per game."""
-    n = len(games)
-    fig, axes = plt.subplots(n, 2, figsize=(10, 2.2 * n))
-    for i, game in enumerate(games):
+    """Compact grid: 5 rows × 4 cols (two games per row, V2|V3 each)."""
+    nrows = (len(games) + 1) // 2
+    fig, axes = plt.subplots(nrows, 4, figsize=(12, 2.1 * nrows), constrained_layout=True)
+    if nrows == 1:
+        axes = np.array([axes])
+
+    for gi, game in enumerate(games):
+        row, slot = divmod(gi, 2)
+        base_col = slot * 2
         r2, r3, baselines = _game_runs(cfg, game)
         task = f'atari_{game}'
-        for col, (runs, title) in enumerate([(r2, 'DreamerV2'), (r3, 'DreamerV3')]):
-            ax = axes[i, col]
+        for offset, (runs, title) in enumerate([(r2, 'DreamerV2'), (r3, 'DreamerV3')]):
+            ax = axes[row, base_col + offset]
             if runs:
                 run = runs[0]
                 hns = [viz.hns(y, task, baselines) for y in run['ys']]
-                ax.plot(np.array(run['xs']) / 1e6, hns, color=COLORS[title], lw=1.5)
-                ax.scatter(np.array(run['xs'][-1:]) / 1e6, hns[-1:], s=30, color=COLORS[title], zorder=5)
-            ax.set_ylabel('HNS', fontsize=7)
-            if i == 0:
-                ax.set_title(title, fontsize=9)
-            if i == n - 1:
-                ax.set_xlabel('Steps (M)', fontsize=7)
+                ax.plot(np.array(run['xs']) / 1e6, hns, color=COLORS[title], lw=1.2)
+                ax.scatter(np.array(run['xs'][-1:]) / 1e6, hns[-1:], s=18, color=COLORS[title], zorder=5)
+            short = title.replace('Dreamer', '')
+            ax.set_title(f'{game} ({short})', fontsize=7)
+            ax.tick_params(labelsize=6)
+            if row == nrows - 1:
+                ax.set_xlabel('Steps (M)', fontsize=6)
+            if base_col + offset == 0:
+                ax.set_ylabel('HNS', fontsize=6)
             ax.grid(alpha=0.3)
-        axes[i, 0].set_ylabel(f'{game}\nHNS', fontsize=7)
-    fig.suptitle('Atari — V2 vs V3 score trajectories (10 games)', y=1.01, fontsize=11)
-    plt.tight_layout()
+
+    for j in range(len(games), nrows * 2):
+        row, slot = divmod(j, 2)
+        for offset in range(2):
+            axes[row, slot * 2 + offset].axis('off')
+
+    fig.suptitle('Atari — V2 vs V3 score trajectories (10 games)', fontsize=11)
     out = cfg.report_dir / 'atari_10game_panels.png'
     fig.savefig(out, dpi=150, bbox_inches='tight')
     if show:
@@ -297,6 +312,7 @@ def run_advanced_viz(cfg: PathConfig, logdir: Path | None = None, show: bool = F
         'mc_summary': mc_summary,
         'minecraft_enhanced': str(cfg.report_dir / 'minecraft_baselines_enhanced.png'),
         'minecraft_overlay': plot_minecraft_local_overlay(cfg, logdir, show=show),
+        'atari_v2_v3': str(cfg.report_dir / 'atari_v2_v3.png'),
         'atari_heatmap': plot_atari_heatmap(cfg, compare, show=show),
         'atari_10_curves': plot_atari_10game_curves(cfg, games, show=show),
         'atari_10_bars': plot_atari_10game_bars(cfg, games, compare, show=show),

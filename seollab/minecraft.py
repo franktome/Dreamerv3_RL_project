@@ -80,35 +80,9 @@ def train(
     return True
 
 
-def infer(
-    cfg: PathConfig,
-    logdir: Path | None = None,
-    gif_path: Path | None = None,
-    max_steps: int = 500,
-    train_mode: str = 'debug',
-) -> dict:
-    """Run policy inference and save GIF."""
-    import imageio
+def _load_agent(cfg: PathConfig, logdir: Path, train_mode: str = 'full'):
     import ruamel.yaml as yaml
     import elements
-
-    from .env_setup import ensure_xvfb
-
-    logdir = Path(logdir or cfg.minecraft_logdir)
-    gif_path = Path(gif_path or cfg.workspace / 'minecraft_diamond_inference.gif')
-    ckpt = logdir / 'ckpt'
-    if not ckpt.exists() or not any(ckpt.iterdir()):
-        return {'ok': False, 'error': f'No checkpoint at {ckpt}'}
-
-    sys.path.insert(0, str(cfg.dreamerv3_root))
-    ready, issues = check_deps()
-    if not ready:
-        return {'ok': False, 'error': '; '.join(issues)}
-
-    ensure_xvfb(cfg.display)
-    cfg.apply_env()
-    sys.path.insert(0, str(cfg.dreamerv3_root))
-
     from dreamerv3.main import make_env
     from dreamerv3.agent import Agent
 
@@ -136,10 +110,31 @@ def infer(
             replica=config.replica, replicas=config.replicas,
         ),
     )
-    cp = elements.Checkpoint(ckpt)
+    cp = elements.Checkpoint(logdir / 'ckpt')
     cp.agent = agent
     cp.load()
+    return agent, env, config, make_env
 
+
+def _save_milestone_strip(milestone_frames: list[tuple[str, np.ndarray]], strip_path: Path) -> str:
+    import imageio
+    from PIL import Image, ImageDraw
+
+    if not milestone_frames:
+        return ''
+    tiles = []
+    for name, img in milestone_frames:
+        tile = Image.fromarray(img).resize((128, 128))
+        draw = ImageDraw.Draw(tile)
+        draw.rectangle([0, 0, 127, 14], fill=(0, 0, 0))
+        draw.text((4, 1), name[:14], fill=(255, 255, 255))
+        tiles.append(np.asarray(tile))
+    strip = np.concatenate(tiles, axis=1)
+    imageio.mimsave(str(strip_path), [strip], duration=500)
+    return str(strip_path)
+
+
+def _rollout_episode(agent, env, max_steps: int, frame_skip: int = 2) -> dict:
     def batch_obs(obs):
         out = {}
         for key, val in obs.items():
@@ -172,7 +167,7 @@ def infer(
 
     for step in range(max_steps):
         img = _capture_frame()
-        if img is not None and step % 3 == 0:
+        if img is not None and step % frame_skip == 0:
             frames.append(img)
         policy_obs = {k: v for k, v in obs.items() if not k.startswith('log/')}
         carry, act, _ = agent.policy(carry, batch_obs(policy_obs), mode='eval')
@@ -191,35 +186,211 @@ def infer(
                         milestone_frames.append((name, snap))
             last_score = score
         if bool(np.asarray(obs.get('is_last', False))):
-            act = {'reset': True}
-            if 'action' in env.act_space:
-                act['action'] = env.act_space['action'].sample()
-            obs = env.step(act)
+            break
 
-    env.close()
-    out_dir = gif_path.parent
-    out_dir.mkdir(parents=True, exist_ok=True)
-    if frames:
-        imageio.mimsave(str(gif_path), frames, duration=125)
-    strip_path = out_dir / 'minecraft_milestone_strip.gif'
-    if milestone_frames:
-        from PIL import Image, ImageDraw
-        tiles = []
-        for name, img in milestone_frames:
-            tile = Image.fromarray(img).resize((128, 128))
-            draw = ImageDraw.Draw(tile)
-            draw.rectangle([0, 0, 127, 14], fill=(0, 0, 0))
-            draw.text((4, 1), name[:14], fill=(255, 255, 255))
-            tiles.append(np.asarray(tile))
-        strip = np.concatenate(tiles, axis=1)
-        imageio.mimsave(str(strip_path), [strip], duration=500)
-    result = {
-        'ok': True,
-        'gif': str(gif_path),
-        'strip_gif': str(strip_path) if milestone_frames else '',
+    return {
+        'frames': frames,
+        'milestone_frames': milestone_frames,
         'steps': step + 1,
         'reward': round(total_reward, 3),
         'max_milestone': MILESTONES[min(last_score, len(MILESTONES) - 1)] if last_score >= 0 else 'none',
         'milestones_reached': reached,
+        'milestone_count': len(reached),
     }
-    return result
+
+
+def infer(
+    cfg: PathConfig,
+    logdir: Path | None = None,
+    gif_path: Path | None = None,
+    max_steps: int = 500,
+    train_mode: str = 'debug',
+    seed: int | None = None,
+) -> dict:
+    """Run policy inference and save GIF."""
+    import imageio
+    import elements
+    from .env_setup import ensure_xvfb
+
+    logdir = Path(logdir or cfg.minecraft_logdir)
+    gif_path = Path(gif_path or cfg.workspace / 'minecraft_diamond_inference.gif')
+    ckpt = logdir / 'ckpt'
+    if not ckpt.exists() or not any(ckpt.iterdir()):
+        return {'ok': False, 'error': f'No checkpoint at {ckpt}'}
+
+    sys.path.insert(0, str(cfg.dreamerv3_root))
+    ready, issues = check_deps()
+    if not ready:
+        return {'ok': False, 'error': '; '.join(issues)}
+
+    ensure_xvfb(cfg.display)
+    cfg.apply_env()
+    sys.path.insert(0, str(cfg.dreamerv3_root))
+
+    agent, env, config, make_env = _load_agent(cfg, logdir, train_mode=train_mode)
+    if seed is not None:
+        env.close()
+        config = config.update(seed=int(seed))
+        env = make_env(config, 0)
+
+    rollout = _rollout_episode(agent, env, max_steps=max_steps)
+    env.close()
+
+    out_dir = gif_path.parent
+    out_dir.mkdir(parents=True, exist_ok=True)
+    if rollout['frames']:
+        imageio.mimsave(str(gif_path), rollout['frames'], duration=125)
+    strip_path = out_dir / 'minecraft_milestone_strip.gif'
+    strip = _save_milestone_strip(rollout['milestone_frames'], strip_path)
+    return {
+        'ok': True,
+        'gif': str(gif_path),
+        'strip_gif': strip,
+        'seed': seed,
+        **{k: rollout[k] for k in ('steps', 'reward', 'max_milestone', 'milestones_reached', 'milestone_count')},
+    }
+
+
+def infer_multi_rollouts(
+    cfg: PathConfig,
+    logdir: Path | None = None,
+    out_dir: Path | None = None,
+    n_rollouts: int = 6,
+    max_steps: int = 3600,
+    seeds: list[int] | None = None,
+    train_mode: str = 'full',
+    top_k: int = 3,
+) -> dict:
+    """Run several rollouts, keep the best milestone chains, export gallery GIFs."""
+    import imageio
+    import json
+    from .env_setup import ensure_xvfb
+
+    logdir = Path(logdir or cfg.minecraft_full_logdir)
+    out_dir = Path(out_dir or cfg.highlights_dir / 'inference' / 'minecraft_rollouts')
+    out_dir.mkdir(parents=True, exist_ok=True)
+    ckpt = logdir / 'ckpt'
+    if not ckpt.exists() or not any(ckpt.iterdir()):
+        return {'ok': False, 'error': f'No checkpoint at {ckpt}'}
+
+    sys.path.insert(0, str(cfg.dreamerv3_root))
+    ready, issues = check_deps()
+    if not ready:
+        return {'ok': False, 'error': '; '.join(issues)}
+
+    ensure_xvfb(cfg.display)
+    cfg.apply_env()
+    sys.path.insert(0, str(cfg.dreamerv3_root))
+
+    seeds = seeds or list(range(100, 100 + n_rollouts))
+    agent, env, config, make_env = _load_agent(cfg, logdir, train_mode=train_mode)
+    env.close()
+
+    rollouts = []
+    for i, seed in enumerate(seeds[:n_rollouts]):
+        env = make_env(config.update(seed=int(seed)), 0)
+        rollout = _rollout_episode(agent, env, max_steps=max_steps)
+        env.close()
+        gif_path = out_dir / f'rollout_{i:02d}_seed{seed}.gif'
+        strip_path = out_dir / f'rollout_{i:02d}_seed{seed}_strip.gif'
+        if rollout['frames']:
+            imageio.mimsave(str(gif_path), rollout['frames'], duration=125)
+        strip = _save_milestone_strip(rollout['milestone_frames'], strip_path)
+        rollouts.append({
+            'index': i,
+            'seed': seed,
+            'gif': str(gif_path),
+            'strip_gif': strip,
+            'steps': rollout['steps'],
+            'reward': rollout['reward'],
+            'max_milestone': rollout['max_milestone'],
+            'milestones_reached': rollout['milestones_reached'],
+            'milestone_count': rollout['milestone_count'],
+        })
+        print(
+            f'Rollout {i+1}/{n_rollouts} seed={seed}: '
+            f'{len(rollout["milestones_reached"])} milestones -> {rollout["max_milestone"]} '
+            f'(reward={rollout["reward"]})',
+        )
+
+    ranked = sorted(
+        rollouts,
+        key=lambda r: (r['milestone_count'], r['reward']),
+        reverse=True,
+    )
+    best = ranked[0] if ranked else None
+    main_dir = cfg.highlights_dir / 'inference'
+    main_dir.mkdir(parents=True, exist_ok=True)
+    if best:
+        main_gif = main_dir / 'minecraft_diamond_rollout.gif'
+        main_strip = main_dir / 'minecraft_milestone_strip.gif'
+        import shutil
+        shutil.copy2(best['gif'], main_gif)
+        if best.get('strip_gif'):
+            shutil.copy2(best['strip_gif'], main_strip)
+
+    gallery = []
+    for rank, item in enumerate(ranked[:top_k], 1):
+        gallery.append({**item, 'rank': rank})
+
+    index = {
+        'ok': True,
+        'logdir': str(logdir),
+        'n_rollouts': len(rollouts),
+        'max_steps': max_steps,
+        'best': best,
+        'top_k': gallery,
+        'all_rollouts': ranked,
+    }
+    index_path = main_dir / 'minecraft_rollouts_index.json'
+    index_path.write_text(json.dumps(index, indent=2))
+    index['index_path'] = str(index_path)
+    index['main_gif'] = str(main_dir / 'minecraft_diamond_rollout.gif')
+    index['main_strip'] = str(main_dir / 'minecraft_milestone_strip.gif')
+    return index
+
+
+def resume_train(
+    cfg: PathConfig,
+    logdir: Path | None = None,
+    envs: int = 6,
+    batch_size: int = 8,
+    mem_fraction: float = 0.42,
+) -> subprocess.Popen:
+    """Resume full training on the configured GPU (non-blocking subprocess)."""
+    from .env_setup import ensure_xvfb
+
+    logdir = Path(logdir or cfg.minecraft_full_logdir)
+    ensure_xvfb(cfg.display)
+    cfg.apply_env(mem_fraction=mem_fraction)
+    logdir.mkdir(parents=True, exist_ok=True)
+
+    log_path = cfg.workspace / 'logs' / 'minecraft_diamond_full' / 'train_gpu1.log'
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+
+    py = sys.executable
+    if cfg.conda_env and (cfg.conda_env / 'bin' / 'python').exists():
+        py = str(cfg.conda_env / 'bin' / 'python')
+    cmd = [
+        py, str(cfg.dreamerv3_root / 'dreamerv3' / 'main.py'),
+        '--logdir', str(logdir),
+        '--configs', 'minecraft', 'size200m',
+        '--task', 'minecraft_diamond',
+        '--script', 'train',
+        '--run.envs', str(envs),
+        '--batch_size', str(batch_size),
+        '--jax.platform', 'cuda',
+        '--jax.prealloc', 'False',
+    ]
+    print('Resume train:', ' '.join(cmd))
+    with log_path.open('a') as logf:
+        logf.write('\n--- resume ---\n')
+        logf.flush()
+        proc = subprocess.Popen(
+            cmd,
+            cwd=str(cfg.dreamerv3_root),
+            stdout=logf,
+            stderr=subprocess.STDOUT,
+            env=os.environ.copy(),
+        )
+    return proc

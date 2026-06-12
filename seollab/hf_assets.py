@@ -38,6 +38,27 @@ def ensure_checkpoints(
     return dest
 
 
+def upload_minecraft_checkpoint(cfg, repo_id: str = HF_REPO) -> str:
+    """Upload local minecraft_diamond_full logdir to Hugging Face."""
+    from huggingface_hub import HfApi
+
+    login_if_needed()
+    logdir = resolve_minecraft_logdir(cfg)
+    if not (logdir / 'ckpt').exists():
+        raise FileNotFoundError(f'No checkpoint at {logdir / "ckpt"}')
+    latest = (logdir / 'ckpt' / 'latest').read_text().strip() if (logdir / 'ckpt' / 'latest').exists() else 'unknown'
+    path_in_repo = 'checkpoints/minecraft_diamond_full'
+    HfApi().upload_folder(
+        folder_path=str(logdir),
+        path_in_repo=path_in_repo,
+        repo_id=repo_id,
+        repo_type='model',
+        allow_patterns=['scores.jsonl', 'metrics.jsonl', 'config.yaml', 'ckpt/**'],
+        commit_message=f'Update minecraft_diamond_full ({latest})',
+    )
+    return f'{repo_id}/{path_in_repo}'
+
+
 def resolve_minecraft_logdir(cfg) -> pathlib.Path:
     """Prefer vendor/dreamerv3 trained logdir when present."""
     candidates = [

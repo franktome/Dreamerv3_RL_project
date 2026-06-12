@@ -120,6 +120,16 @@ def infer_both(
     )
     compare_path = cfg.highlights_dir / 'inference' / f'atari_{game}_v2v3_compare{suffix}.gif'
     save_compare_gif(stacked, compare_path)
+    scores_payload = {
+        'v2': v2.get('score'),
+        'v3': v3.get('score'),
+        'delta': round(v3.get('score', 0) - v2.get('score', 0), 3),
+        'tag': tag or 'default',
+        'env_overrides': env_overrides or {},
+    }
+    compare_path.with_suffix('.scores.json').write_text(
+        __import__('json').dumps(scores_payload, indent=2),
+    )
     return {
         'ok': True,
         'game': game,

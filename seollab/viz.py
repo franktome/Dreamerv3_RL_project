@@ -105,8 +105,15 @@ def plot_atari_v2_v3(cfg: PathConfig, show: bool = True) -> pd.DataFrame:
     v2s = final_hns(v2).rename('DreamerV2')
     compare = pd.concat([v2s, v3s], axis=1).dropna()
     compare['delta'] = compare['DreamerV3'] - compare['DreamerV2']
+    compare['Δ'] = compare['delta']
 
-    fig, axes = plt.subplots(2, 1, figsize=(14, 10))
+    cs = compare.sort_values('DreamerV3')
+    n = len(cs)
+    fig_h = max(12.0, 4.0 + n * 0.17)
+    fig, axes = plt.subplots(
+        2, 1, figsize=(14, fig_h),
+        gridspec_kw={'height_ratios': [1.2, max(4.0, n * 0.14)]},
+    )
     def med_curve(runs):
         tasks = sorted({r['task'] for r in runs})
         max_x = min(50_000_000, max(max(r['xs']) for r in runs))
@@ -136,14 +143,14 @@ def plot_atari_v2_v3(cfg: PathConfig, show: bool = True) -> pd.DataFrame:
     axes[0].legend()
     axes[0].grid(alpha=0.3)
 
-    cs = compare.sort_values('DreamerV3')
-    y = np.arange(len(cs))
+    y = np.arange(n)
     w = 0.35
-    axes[1].barh(y - w / 2, cs['DreamerV2'], height=w, label='DreamerV2', alpha=0.85)
-    axes[1].barh(y + w / 2, cs['DreamerV3'], height=w, label='DreamerV3', alpha=0.85)
+    axes[1].barh(y - w / 2, cs['DreamerV2'], height=w, label='DreamerV2', color='#1f77b4', alpha=0.85)
+    axes[1].barh(y + w / 2, cs['DreamerV3'], height=w, label='DreamerV3', color='#ff7f0e', alpha=0.85)
     axes[1].set_yticks(y)
-    axes[1].set_yticklabels([t.replace('atari_', '') for t in cs.index], fontsize=7)
+    axes[1].set_yticklabels([t.replace('atari_', '') for t in cs.index], fontsize=6)
     axes[1].set_xlabel('HNS @ 50M')
+    axes[1].set_title(f'Per-game HNS @ 50M ({n} games)')
     axes[1].legend(loc='lower right')
     plt.tight_layout()
     fig.savefig(cfg.report_dir / 'atari_v2_v3.png', dpi=150, bbox_inches='tight')
