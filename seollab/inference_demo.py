@@ -251,6 +251,158 @@ def run_minecraft_multi_rollouts(
     )
 
 
+def load_minecraft_rollout_index(
+    cfg: PathConfig,
+    logdir: Path | None = None,
+    top_k: int = 3,
+) -> dict:
+    """Rebuild rollout index from disk and merge saved reward/milestone metadata."""
+    logdir = Path(logdir or cfg.minecraft_full_logdir)
+    index_path = cfg.highlights_dir / 'inference' / 'minecraft_rollouts_index.json'
+    saved = json.loads(index_path.read_text()) if index_path.exists() else {}
+    scanned = minecraft.scan_rollout_cache(cfg, logdir=logdir, top_k=top_k)
+    if not scanned.get('ok'):
+        return saved if saved.get('ok') else scanned
+    if saved.get('ok') and saved.get('all_rollouts'):
+        meta = {r['gif']: r for r in saved['all_rollouts']}
+        for row in scanned['all_rollouts']:
+            old = meta.get(row['gif'])
+            if not old:
+                continue
+            for key in (
+                'reward', 'steps', 'milestones_reached', 'milestone_count',
+                'max_milestone', 'gallery_png', 'milestone_pngs', 'milestones_dir',
+            ):
+                if old.get(key):
+                    row[key] = old[key]
+        ranked = sorted(
+            scanned['all_rollouts'],
+            key=lambda r: (r['milestone_count'], r.get('reward', 0), r['seed']),
+            reverse=True,
+        )
+        scanned['all_rollouts'] = ranked
+        scanned['best'] = ranked[0]
+        scanned['top_k'] = minecraft._diverse_top_k(ranked, k=top_k)
+        for key in ('checkpoint_id', 'training_step', 'max_steps', 'seeds'):
+            if saved.get(key):
+                scanned[key] = saved[key]
+        index_path.write_text(json.dumps(scanned, indent=2))
+    return scanned
+
+
+def display_minecraft_inference(
+    cfg: PathConfig,
+    mc_index: dict,
+    health: dict,
+    logdir: Path | None = None,
+) -> dict:
+    """Render Minecraft checkpoint + rollout GIFs / milestone galleries in the notebook."""
+    from IPython.display import Image, Markdown, display
+
+    logdir = Path(logdir or cfg.minecraft_full_logdir)
+    inf = cfg.highlights_dir / 'inference'
+    best = mc_index.get('best') or {}
+    best_chains = training_milestone_chains(logdir, top_n=3)
+
+    ckpt_id = mc_index.get('checkpoint_id') or health.get('checkpoint', '?')
+    train_step = mc_index.get('training_step') or health.get('step', '?')
+
+    mc_result = {
+        'ok': mc_index.get('ok', False),
+        'gif': mc_index.get('main_gif', str(inf / 'minecraft_diamond_rollout.gif')),
+        'strip_gif': mc_index.get('main_strip', str(inf / 'minecraft_milestone_strip.gif')),
+        'gallery_png': mc_index.get('main_gallery', str(inf / 'minecraft_milestone_gallery.png')),
+        'reward': best.get('reward', health.get('max_episode_score', 0)),
+        'max_milestone': best.get('max_milestone', health.get('max_milestone_name', '?')),
+        'milestones_reached': best.get('milestones_reached', []),
+        'checkpoint_id': ckpt_id,
+        'training_step': train_step,
+        'training_episodes': health.get('episodes', 0),
+        'mean_episode_score': health.get('mean_episode_score', 0),
+    }
+
+    if not mc_result['ok']:
+        display(Markdown(f"*{mc_index.get('error', 'No checkpoint / rollouts')}*"))
+        return mc_result
+
+    cached = ' (rebuilt from cache)' if mc_index.get('cached') else ''
+    display(Markdown(
+        '### Checkpoint & training status\n'
+        f"- **Checkpoint:** `{ckpt_id}` @ training step **{train_step:,}**\n"
+        f"- **Logdir:** `{logdir}`\n"
+        f"- **Rollouts indexed:** {mc_index.get('n_rollouts', '?')}{cached}\n"
+        f"- **Policy fps:** {health.get('fps_policy', '?')}"
+    ))
+    if health.get('issues'):
+        display(Markdown('**Health notes:** ' + '; '.join(health['issues'])))
+
+    display(Markdown(
+        '### Training summary (`scores.jsonl`)\n'
+        f"- Episodes: **{mc_result['training_episodes']}**\n"
+        f"- Max training score: **{health.get('max_episode_score', 0):.1f}** "
+        f"(milestone **{health.get('max_milestone_name', '?')}**)\n"
+        f"- Mean episode score: **{mc_result['mean_episode_score']:.2f}**"
+    ))
+    if best_chains:
+        lines = [
+            f"{i}. score **{c['score']:.1f}** @ step {c['step']:,} — "
+            + ' → '.join(c['milestones'])
+            for i, c in enumerate(best_chains, 1)
+        ]
+        display(Markdown('**Top training episodes**\n' + '\n'.join(f'- {ln}' for ln in lines)))
+
+    display(Markdown('### Best inference rollout (deepest milestone chain)'))
+    if mc_result.get('milestones_reached'):
+        display(Markdown(
+            '**Milestones:** ' + ' → '.join(mc_result['milestones_reached'])
+            + f"  \n**Reward:** {mc_result.get('reward', 0):.2f}"
+        ))
+
+    gallery = mc_result.get('gallery_png', '')
+    if gallery and Path(gallery).exists():
+        display(Markdown('**Milestone event frames (best rollout)**'))
+        display(Image(filename=gallery))
+    elif mc_result.get('strip_gif') and Path(mc_result['strip_gif']).exists():
+        display(Markdown('**Milestone strip (best rollout)**'))
+        display(Image(filename=mc_result['strip_gif']))
+
+    gif = mc_result.get('gif', '')
+    if gif and Path(gif).exists():
+        display(Markdown('**Full episode GIF (best rollout)**'))
+        display(Image(filename=gif))
+
+    top = mc_index.get('top_k') or []
+    if top:
+        display(Markdown('### Diverse rollouts (distinct milestone chains when available)'))
+        for item in top:
+            chain = ' → '.join(item.get('milestones_reached', [])) or '(none)'
+            display(Markdown(
+                f"**#{item.get('rank', '?')}** seed={item.get('seed')} — "
+                f"**{item.get('max_milestone')}** "
+                f"({item.get('milestone_count', 0)} events, reward={item.get('reward', 0):.2f})\n"
+                f"{chain}"
+            ))
+            if item.get('gallery_png') and Path(item['gallery_png']).exists():
+                display(Image(filename=item['gallery_png']))
+            elif item.get('strip_gif') and Path(item['strip_gif']).exists():
+                display(Image(filename=item['strip_gif']))
+            pngs = item.get('milestone_pngs') or {}
+            if pngs:
+                ordered = [pngs[n] for n in item.get('milestones_reached', []) if n in pngs]
+                for p in ordered[:6]:
+                    if Path(p).exists():
+                        display(Image(filename=p, width=140))
+            if item.get('gif') and Path(item['gif']).exists():
+                display(Image(filename=item['gif'], width=360))
+
+    scores = plot_local_minecraft_scores(cfg, logdir=logdir, show=False)
+    if scores.get('ok') and Path(scores.get('png', '')).exists():
+        display(Markdown('### Training milestone distribution'))
+        display(Image(filename=scores['png']))
+
+    return mc_result
+
+
 def run_atari_v3_env_gif(cfg: PathConfig, game: str = 'pong', max_steps: int = 1500) -> dict:
     """DreamerV3 Atari env GIF from local debug checkpoint if present."""
     logdir = cfg.dreamerv3_root / 'logdir' / f'atari_{game}'

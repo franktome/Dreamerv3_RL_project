@@ -1,0 +1,156 @@
+{
+  "presets": {
+    "baseline": {
+      "repeat": 4,
+      "sticky": 0.25,
+      "noops": 30,
+      "seed": null
+    },
+    "fast": {
+      "repeat": 2,
+      "sticky": 0.25,
+      "noops": 30,
+      "seed": null
+    },
+    "sluggish": {
+      "repeat": 4,
+      "sticky": 0.5,
+      "noops": 30,
+      "seed": null
+    }
+  },
+  "games": {
+    "pong": {
+      "baseline": {
+        "repeat": 4,
+        "sticky": 0.25,
+        "grid_gif": "",
+        "baseline_compare_gif": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/atari_pong_v2v3_compare_baseline.gif",
+        "perturbed_compare_gif": "",
+        "scores": {
+          "baseline": {
+            "v2": -41.0,
+            "v3": -41.0,
+            "delta": 0.0
+          }
+        }
+      },
+      "fast": {
+        "repeat": 2,
+        "sticky": 0.25,
+        "grid_gif": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/anim/atari_pong_fast_v2v3.gif",
+        "baseline_compare_gif": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/atari_pong_v2v3_compare_baseline.gif",
+        "perturbed_compare_gif": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/atari_pong_v2v3_compare_fast.gif",
+        "scores": {
+          "baseline": {
+            "v2": -41.0,
+            "v3": -41.0,
+            "delta": 0.0
+          }
+        }
+      },
+      "sluggish": {
+        "repeat": 4,
+        "sticky": 0.5,
+        "grid_gif": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/anim/atari_pong_sluggish_v2v3.gif",
+        "baseline_compare_gif": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/atari_pong_v2v3_compare_baseline.gif",
+        "perturbed_compare_gif": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/atari_pong_v2v3_compare_sluggish.gif",
+        "scores": {
+          "baseline": {
+            "v2": -41.0,
+            "v3": -41.0,
+            "delta": 0.0
+          }
+        }
+      }
+    },
+    "breakout": {
+      "baseline": {
+        "repeat": 4,
+        "sticky": 0.25,
+        "grid_gif": "",
+        "baseline_compare_gif": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/atari_breakout_v2v3_compare_baseline.gif",
+        "perturbed_compare_gif": "",
+        "scores": {
+          "baseline": {
+            "v2": 2.0,
+            "v3": 15.0,
+            "delta": 13.0
+          }
+        }
+      },
+      "fast": {
+        "repeat": 2,
+        "sticky": 0.25,
+        "grid_gif": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/anim/atari_breakout_fast_v2v3.gif",
+        "baseline_compare_gif": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/atari_breakout_v2v3_compare_baseline.gif",
+        "perturbed_compare_gif": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/atari_breakout_v2v3_compare_fast.gif",
+        "scores": {
+          "baseline": {
+            "v2": 2.0,
+            "v3": 15.0,
+            "delta": 13.0
+          }
+        }
+      },
+      "sluggish": {
+        "repeat": 4,
+        "sticky": 0.5,
+        "grid_gif": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/anim/atari_breakout_sluggish_v2v3.gif",
+        "baseline_compare_gif": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/atari_breakout_v2v3_compare_baseline.gif",
+        "perturbed_compare_gif": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/atari_breakout_v2v3_compare_sluggish.gif",
+        "scores": {
+          "baseline": {
+            "v2": 2.0,
+            "v3": 15.0,
+            "delta": 13.0
+          }
+        }
+      }
+    },
+    "boxing": {
+      "baseline": {
+        "repeat": 4,
+        "sticky": 0.25,
+        "grid_gif": "",
+        "baseline_compare_gif": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/atari_boxing_v2v3_compare_baseline.gif",
+        "perturbed_compare_gif": "",
+        "scores": {
+          "baseline": {
+            "v2": -17.0,
+            "v3": 1.0,
+            "delta": 18.0
+          }
+        }
+      },
+      "fast": {
+        "repeat": 2,
+        "sticky": 0.25,
+        "grid_gif": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/anim/atari_boxing_fast_v2v3.gif",
+        "baseline_compare_gif": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/atari_boxing_v2v3_compare_baseline.gif",
+        "perturbed_compare_gif": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/atari_boxing_v2v3_compare_fast.gif",
+        "scores": {
+          "baseline": {
+            "v2": -17.0,
+            "v3": 1.0,
+            "delta": 18.0
+          }
+        }
+      },
+      "sluggish": {
+        "repeat": 4,
+        "sticky": 0.5,
+        "grid_gif": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/anim/atari_boxing_sluggish_v2v3.gif",
+        "baseline_compare_gif": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/atari_boxing_v2v3_compare_baseline.gif",
+        "perturbed_compare_gif": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/atari_boxing_v2v3_compare_sluggish.gif",
+        "scores": {
+          "baseline": {
+            "v2": -17.0,
+            "v3": 1.0,
+            "delta": 18.0
+          }
+        }
+      }
+    }
+  }
+}

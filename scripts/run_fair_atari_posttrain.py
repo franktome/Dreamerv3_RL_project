@@ -45,8 +45,16 @@ def main() -> None:
         'compare': {g: refresh['compare'][g] for g in games},
         'report': str(report),
     }
+    import importlib.util
+    wc_path = WORKSPACE / 'scripts' / 'compute_atari_wallclock.py'
+    spec = importlib.util.spec_from_file_location('atari_wallclock', wc_path)
+    wc_mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(wc_mod)
+    wc = wc_mod.main()
+    payload['wallclock_report'] = str(wc)
     out.write_text(json.dumps(payload, indent=2, default=str), encoding='utf-8')
     print('Saved', out)
+    print('Wall-clock:', wc)
 
 
 if __name__ == '__main__':

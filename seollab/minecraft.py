@@ -1,6 +1,8 @@
 """Minecraft diamond: deps check, train, inference."""
 
+import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -116,22 +118,117 @@ def _load_agent(cfg: PathConfig, logdir: Path, train_mode: str = 'full'):
     return agent, env, config, make_env
 
 
+def _checkpoint_info(logdir: Path) -> dict:
+    logdir = Path(logdir)
+    latest = logdir / 'ckpt' / 'latest'
+    ckpt_id = latest.read_text().strip() if latest.exists() else ''
+    ckpt_dir = logdir / 'ckpt' / ckpt_id if ckpt_id else None
+    step = 0
+    metrics = logdir / 'metrics.jsonl'
+    if metrics.exists():
+        step = json.loads(metrics.read_text().strip().splitlines()[-1]).get('step', 0)
+    return {
+        'checkpoint_id': ckpt_id,
+        'checkpoint_dir': str(ckpt_dir) if ckpt_dir and ckpt_dir.exists() else '',
+        'training_step': int(step),
+    }
+
+
+def _labeled_tile(name: str, img: np.ndarray, size: int = 128):
+    from PIL import Image, ImageDraw
+
+    tile = Image.fromarray(img).resize((size, size))
+    draw = ImageDraw.Draw(tile)
+    draw.rectangle([0, 0, size - 1, 16], fill=(0, 0, 0))
+    draw.text((4, 2), name[:18], fill=(255, 255, 255))
+    return tile
+
+
 def _save_milestone_strip(milestone_frames: list[tuple[str, np.ndarray]], strip_path: Path) -> str:
     import imageio
-    from PIL import Image, ImageDraw
 
     if not milestone_frames:
         return ''
-    tiles = []
-    for name, img in milestone_frames:
-        tile = Image.fromarray(img).resize((128, 128))
-        draw = ImageDraw.Draw(tile)
-        draw.rectangle([0, 0, 127, 14], fill=(0, 0, 0))
-        draw.text((4, 1), name[:14], fill=(255, 255, 255))
-        tiles.append(np.asarray(tile))
+    tiles = [np.asarray(_labeled_tile(name, img)) for name, img in milestone_frames]
     strip = np.concatenate(tiles, axis=1)
     imageio.mimsave(str(strip_path), [strip], duration=500)
     return str(strip_path)
+
+
+def _save_milestone_assets(
+    milestone_frames: list[tuple[str, np.ndarray]],
+    base_path: Path,
+    *,
+    gallery_cols: int = 4,
+    tile_size: int = 160,
+) -> dict:
+    """Per-milestone PNGs, horizontal strip GIF, and labeled grid PNG."""
+    import imageio
+    from PIL import Image
+
+    base_path = Path(base_path)
+    base_path.parent.mkdir(parents=True, exist_ok=True)
+    stem = base_path.stem
+    parent = base_path.parent
+
+    strip_path = parent / f'{stem}_strip.gif'
+    gallery_path = parent / f'{stem}_gallery.png'
+    milestones_dir = parent / f'{stem}_milestones'
+    milestones_dir.mkdir(parents=True, exist_ok=True)
+
+    milestone_pngs: dict[str, str] = {}
+    for name, img in milestone_frames:
+        png = milestones_dir / f'{name}.png'
+        _labeled_tile(name, img, size=tile_size).save(png)
+        milestone_pngs[name] = str(png)
+
+    strip = _save_milestone_strip(milestone_frames, strip_path)
+
+    gallery = ''
+    if milestone_frames:
+        tiles = [_labeled_tile(name, img, size=tile_size) for name, img in milestone_frames]
+        cols = min(gallery_cols, len(tiles))
+        rows = (len(tiles) + cols - 1) // cols
+        label_h = 0
+        canvas = Image.new(
+            'RGB',
+            (cols * tile_size, rows * (tile_size + label_h)),
+            (24, 24, 24),
+        )
+        for i, tile in enumerate(tiles):
+            r, c = divmod(i, cols)
+            canvas.paste(tile, (c * tile_size, r * (tile_size + label_h)))
+        canvas.save(gallery_path)
+        gallery = str(gallery_path)
+
+    return {
+        'strip_gif': strip,
+        'gallery_png': gallery,
+        'milestones_dir': str(milestones_dir),
+        'milestone_pngs': milestone_pngs,
+    }
+
+
+def _diverse_top_k(ranked: list[dict], k: int = 3) -> list[dict]:
+    """Pick top rollouts with distinct milestone chains when possible."""
+    picked: list[dict] = []
+    seen: set[tuple[str, ...]] = set()
+    for row in ranked:
+        sig = tuple(row.get('milestones_reached') or [])
+        if not picked or sig not in seen:
+            picked.append(row)
+            seen.add(sig)
+        if len(picked) >= k:
+            break
+    for row in ranked:
+        if row in picked:
+            continue
+        picked.append(row)
+        if len(picked) >= k:
+            break
+    for i, row in enumerate(picked[:k], 1):
+        row['rank'] = i
+    return picked[:k]
 
 
 def _rollout_episode(agent, env, max_steps: int, frame_skip: int = 2) -> dict:
@@ -240,13 +337,20 @@ def infer(
     out_dir.mkdir(parents=True, exist_ok=True)
     if rollout['frames']:
         imageio.mimsave(str(gif_path), rollout['frames'], duration=125)
-    strip_path = out_dir / 'minecraft_milestone_strip.gif'
-    strip = _save_milestone_strip(rollout['milestone_frames'], strip_path)
+    assets = _save_milestone_assets(
+        rollout['milestone_frames'],
+        gif_path.with_suffix(''),
+    )
+    ckpt = _checkpoint_info(logdir)
     return {
         'ok': True,
         'gif': str(gif_path),
-        'strip_gif': strip,
+        'strip_gif': assets.get('strip_gif', ''),
+        'gallery_png': assets.get('gallery_png', ''),
+        'milestone_pngs': assets.get('milestone_pngs', {}),
+        'milestones_dir': assets.get('milestones_dir', ''),
         'seed': seed,
+        **ckpt,
         **{k: rollout[k] for k in ('steps', 'reward', 'max_milestone', 'milestones_reached', 'milestone_count')},
     }
 
@@ -292,15 +396,17 @@ def infer_multi_rollouts(
         rollout = _rollout_episode(agent, env, max_steps=max_steps)
         env.close()
         gif_path = out_dir / f'rollout_{i:02d}_seed{seed}.gif'
-        strip_path = out_dir / f'rollout_{i:02d}_seed{seed}_strip.gif'
         if rollout['frames']:
             imageio.mimsave(str(gif_path), rollout['frames'], duration=125)
-        strip = _save_milestone_strip(rollout['milestone_frames'], strip_path)
+        assets = _save_milestone_assets(rollout['milestone_frames'], gif_path.with_suffix(''))
         rollouts.append({
             'index': i,
             'seed': seed,
             'gif': str(gif_path),
-            'strip_gif': strip,
+            'strip_gif': assets.get('strip_gif', ''),
+            'gallery_png': assets.get('gallery_png', ''),
+            'milestone_pngs': assets.get('milestone_pngs', {}),
+            'milestones_dir': assets.get('milestones_dir', ''),
             'steps': rollout['steps'],
             'reward': rollout['reward'],
             'max_milestone': rollout['max_milestone'],
@@ -315,7 +421,7 @@ def infer_multi_rollouts(
 
     ranked = sorted(
         rollouts,
-        key=lambda r: (r['milestone_count'], r['reward']),
+        key=lambda r: (r['milestone_count'], r['reward'], r['steps']),
         reverse=True,
     )
     best = ranked[0] if ranked else None
@@ -324,20 +430,23 @@ def infer_multi_rollouts(
     if best:
         main_gif = main_dir / 'minecraft_diamond_rollout.gif'
         main_strip = main_dir / 'minecraft_milestone_strip.gif'
-        import shutil
+        main_gallery = main_dir / 'minecraft_milestone_gallery.png'
         shutil.copy2(best['gif'], main_gif)
         if best.get('strip_gif'):
             shutil.copy2(best['strip_gif'], main_strip)
+        if best.get('gallery_png'):
+            shutil.copy2(best['gallery_png'], main_gallery)
 
-    gallery = []
-    for rank, item in enumerate(ranked[:top_k], 1):
-        gallery.append({**item, 'rank': rank})
+    gallery = _diverse_top_k(ranked, k=top_k)
+    ckpt = _checkpoint_info(logdir)
 
     index = {
         'ok': True,
         'logdir': str(logdir),
         'n_rollouts': len(rollouts),
         'max_steps': max_steps,
+        'seeds': seeds[:n_rollouts],
+        **ckpt,
         'best': best,
         'top_k': gallery,
         'all_rollouts': ranked,
@@ -347,6 +456,86 @@ def infer_multi_rollouts(
     index['index_path'] = str(index_path)
     index['main_gif'] = str(main_dir / 'minecraft_diamond_rollout.gif')
     index['main_strip'] = str(main_dir / 'minecraft_milestone_strip.gif')
+    index['main_gallery'] = str(main_dir / 'minecraft_milestone_gallery.png')
+    return index
+
+
+def scan_rollout_cache(
+    cfg: PathConfig,
+    logdir: Path | None = None,
+    out_dir: Path | None = None,
+    top_k: int = 3,
+) -> dict:
+    """Rebuild rollout index from on-disk GIFs / milestone PNG folders."""
+    logdir = Path(logdir or cfg.minecraft_full_logdir)
+    out_dir = Path(out_dir or cfg.highlights_dir / 'inference' / 'minecraft_rollouts')
+    main_dir = cfg.highlights_dir / 'inference'
+    if not out_dir.exists():
+        return {'ok': False, 'error': f'No rollout cache at {out_dir}'}
+
+    pat = re.compile(r'^rollout_(\d+)_seed(\d+)\.gif$')
+    rollouts = []
+    for gif in sorted(out_dir.glob('rollout_*_seed*.gif')):
+        m = pat.match(gif.name)
+        if not m:
+            continue
+        i, seed = int(m.group(1)), int(m.group(2))
+        stem = gif.with_suffix('')
+        strip = Path(str(stem) + '_strip.gif')
+        gallery = Path(str(stem) + '_gallery.png')
+        milestones_dir = Path(str(stem) + '_milestones')
+        pngs = sorted(milestones_dir.glob('*.png')) if milestones_dir.exists() else []
+        reached = [p.stem for p in pngs]
+        milestone_pngs = {p.stem: str(p) for p in pngs}
+        if pngs:
+            mcount = len(pngs)
+            max_ms = pngs[-1].stem
+        elif strip.exists():
+            mcount = max(1, strip.stat().st_size // 12_000)
+            max_ms = 'see_strip'
+            reached = ['(legacy strip — re-run RUN_MC_MULTI=1 for per-event PNGs)']
+        else:
+            mcount = 0
+            max_ms = 'none'
+        rollouts.append({
+            'index': i,
+            'seed': seed,
+            'gif': str(gif),
+            'strip_gif': str(strip) if strip.exists() else '',
+            'gallery_png': str(gallery) if gallery.exists() else '',
+            'milestones_dir': str(milestones_dir) if milestones_dir.exists() else '',
+            'milestone_pngs': milestone_pngs,
+            'milestones_reached': reached,
+            'milestone_count': mcount,
+            'max_milestone': max_ms,
+            'reward': 0.0,
+            'steps': 0,
+        })
+
+    if not rollouts:
+        return {'ok': False, 'error': 'No rollout GIFs found in cache'}
+
+    ranked = sorted(rollouts, key=lambda r: (r['milestone_count'], r['seed']), reverse=True)
+    best = ranked[0]
+    ckpt = _checkpoint_info(logdir)
+    gallery = _diverse_top_k(ranked, k=top_k)
+
+    index = {
+        'ok': True,
+        'cached': True,
+        'logdir': str(logdir),
+        'n_rollouts': len(rollouts),
+        **ckpt,
+        'best': best,
+        'top_k': gallery,
+        'all_rollouts': ranked,
+        'main_gif': str(main_dir / 'minecraft_diamond_rollout.gif'),
+        'main_strip': str(main_dir / 'minecraft_milestone_strip.gif'),
+        'main_gallery': str(main_dir / 'minecraft_milestone_gallery.png'),
+    }
+    index_path = main_dir / 'minecraft_rollouts_index.json'
+    index_path.write_text(json.dumps(index, indent=2))
+    index['index_path'] = str(index_path)
     return index
 
 

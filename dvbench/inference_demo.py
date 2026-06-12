@@ -1,6 +1,8 @@
 from seollab.inference_demo import (
     analyze_training_health,
+    display_minecraft_inference,
     ensure_minecraft_training_plots,
+    load_minecraft_rollout_index,
     plot_atari_comparison,
     plot_atari_hns_distribution,
     plot_local_minecraft_scores,
@@ -13,7 +15,9 @@ from seollab.inference_demo import (
 
 __all__ = [
     'analyze_training_health',
+    'display_minecraft_inference',
     'ensure_minecraft_training_plots',
+    'load_minecraft_rollout_index',
     'plot_atari_comparison',
     'plot_atari_hns_distribution',
     'plot_local_minecraft_scores',

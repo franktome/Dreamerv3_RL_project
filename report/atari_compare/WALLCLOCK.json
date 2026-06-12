@@ -1,0 +1,56 @@
+[
+  {
+    "game": "pong",
+    "model": "DreamerV2",
+    "version": "v2",
+    "phase1_fair_hours": 1.43,
+    "phase2_extend_hours": 3.69,
+    "wall_clock_hours": 5.12,
+    "logdir": "/mnt/server12_hard0/kiseol/Dreamerv3/vendor/dreamerv3/logdir/atari_pong_v2"
+  },
+  {
+    "game": "pong",
+    "model": "DreamerV3",
+    "version": "v3",
+    "phase1_fair_hours": 0.39,
+    "phase2_extend_hours": 1.44,
+    "wall_clock_hours": 1.83,
+    "logdir": "/mnt/server12_hard0/kiseol/Dreamerv3/vendor/dreamerv3/logdir/atari_pong_v3"
+  },
+  {
+    "game": "breakout",
+    "model": "DreamerV2",
+    "version": "v2",
+    "phase1_fair_hours": 0.55,
+    "phase2_extend_hours": 8.01,
+    "wall_clock_hours": 8.55,
+    "logdir": "/mnt/server12_hard0/kiseol/Dreamerv3/vendor/dreamerv3/logdir/atari_breakout_v2"
+  },
+  {
+    "game": "breakout",
+    "model": "DreamerV3",
+    "version": "v3",
+    "phase1_fair_hours": 0.39,
+    "phase2_extend_hours": 1.47,
+    "wall_clock_hours": 1.86,
+    "logdir": "/mnt/server12_hard0/kiseol/Dreamerv3/vendor/dreamerv3/logdir/atari_breakout_v3"
+  },
+  {
+    "game": "boxing",
+    "model": "DreamerV2",
+    "version": "v2",
+    "phase1_fair_hours": 1.52,
+    "phase2_extend_hours": 6.38,
+    "wall_clock_hours": 7.9,
+    "logdir": "/mnt/server12_hard0/kiseol/Dreamerv3/vendor/dreamerv3/logdir/atari_boxing_v2"
+  },
+  {
+    "game": "boxing",
+    "model": "DreamerV3",
+    "version": "v3",
+    "phase1_fair_hours": 0.39,
+    "phase2_extend_hours": 1.51,
+    "wall_clock_hours": 1.89,
+    "logdir": "/mnt/server12_hard0/kiseol/Dreamerv3/vendor/dreamerv3/logdir/atari_boxing_v3"
+  }
+]

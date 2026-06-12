@@ -1,0 +1,11 @@
+{
+  "total_minutes": 300,
+  "jobs": [
+    {"tag": "pong_v3", "gpu": "2", "version": "v3", "game": "pong", "started": "2026-06-12T00:26:25", "deadline": "2026-06-12T05:26:25"},
+    {"tag": "breakout_v3", "gpu": "4", "version": "v3", "game": "breakout", "started": "2026-06-12T00:26:25", "deadline": "2026-06-12T05:26:25"},
+    {"tag": "boxing_v3", "gpu": "5", "version": "v3", "game": "boxing", "started": "2026-06-12T00:26:25", "deadline": "2026-06-12T05:26:25"},
+    {"tag": "pong_v2", "gpu": "3", "version": "v2", "game": "pong", "started": "2026-06-12T00:42:30", "deadline": "2026-06-12T05:42:30"},
+    {"tag": "breakout_v2", "gpu": "2", "version": "v2", "game": "breakout", "after": "pong_v3", "minutes": 300, "deadline": "2026-06-12T10:26:25"},
+    {"tag": "boxing_v2", "gpu": "4", "version": "v2", "game": "boxing", "after": "breakout_v3", "minutes": 300, "deadline": "2026-06-12T10:26:25"}
+  ]
+}

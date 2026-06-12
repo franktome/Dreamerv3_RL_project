@@ -1,0 +1,185 @@
+{
+  "alignment": [
+    {
+      "game": "pong",
+      "v2_env_steps": 503224,
+      "v2_episodes": 619,
+      "v3_env_steps": 498561,
+      "v3_episodes": 471,
+      "v3_ckpt_env_steps": 497390,
+      "aligned_env_steps": 498561,
+      "aligned_episodes": 471,
+      "fair_gif": true,
+      "note": "V2 using sidecar snapshot at 480476 env steps (aligned 498561) | Using main V3 ckpt at 497390 env steps"
+    },
+    {
+      "game": "breakout",
+      "v2_env_steps": 324129,
+      "v2_episodes": 931,
+      "v3_env_steps": 499883,
+      "v3_episodes": 2025,
+      "v3_ckpt_env_steps": 489000,
+      "aligned_env_steps": 324129,
+      "aligned_episodes": 931,
+      "fair_gif": false,
+      "note": "V3 main ckpt at 489000 env steps > aligned 324129; need aligned retrain in atari_breakout_v3_aligned"
+    },
+    {
+      "game": "boxing",
+      "v2_env_steps": 502097,
+      "v2_episodes": 281,
+      "v3_env_steps": 498924,
+      "v3_episodes": 290,
+      "v3_ckpt_env_steps": 475050,
+      "aligned_env_steps": 498924,
+      "aligned_episodes": 281,
+      "fair_gif": true,
+      "note": "V2 using sidecar snapshot at 498533 env steps (aligned 498924) | Using main V3 ckpt at 475050 env steps"
+    }
+  ],
+  "compare": {
+    "pong": {
+      "ok": true,
+      "game": "pong",
+      "v2": {
+        "ok": true,
+        "gif": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/atari_pong_v2_rollout.gif",
+        "score": -41.0,
+        "steps": 1500,
+        "action_entropy": -1.000088900581841e-12
+      },
+      "v3": {
+        "ok": true,
+        "game": "pong",
+        "score": -14.0,
+        "gif": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/atari_pong_v3_rollout.gif",
+        "steps": 1500,
+        "action_entropy": 1.7174919137000406
+      },
+      "compare_gif": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/atari_pong_v2v3_compare.gif",
+      "score_delta": 27.0,
+      "aligned_env_steps": 498561,
+      "alignment": {
+        "game": "pong",
+        "v2": {
+          "version": "v2",
+          "logdir": "/mnt/server12_hard0/kiseol/Dreamerv3/vendor/dreamerv3/logdir/atari_pong_v2",
+          "logged_step": 2012896,
+          "env_steps": 503224,
+          "episodes": 619,
+          "ckpt_path": "/mnt/server12_hard0/kiseol/Dreamerv3/vendor/dreamerv3/logdir/atari_pong_v2/snapshots/variables_0480476.pkl",
+          "ckpt_env_steps": 480476
+        },
+        "v3": {
+          "version": "v3",
+          "logdir": "/mnt/server12_hard0/kiseol/Dreamerv3/vendor/dreamerv3/logdir/atari_pong_v3",
+          "logged_step": 1994244,
+          "env_steps": 498561,
+          "episodes": 471,
+          "ckpt_path": "/mnt/server12_hard0/kiseol/Dreamerv3/vendor/dreamerv3/logdir/atari_pong_v3/ckpt/20260612T230552F075515",
+          "ckpt_env_steps": 497390
+        },
+        "aligned_env_steps": 498561,
+        "aligned_episodes": 471,
+        "fair_gif": true,
+        "note": "V2 using sidecar snapshot at 480476 env steps (aligned 498561) | Using main V3 ckpt at 497390 env steps"
+      }
+    },
+    "breakout": {
+      "ok": true,
+      "game": "breakout",
+      "v2": {
+        "ok": true,
+        "gif": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/atari_breakout_v2_rollout.gif",
+        "score": 0.0,
+        "steps": 1500,
+        "action_entropy": 0.0694004282828323
+      },
+      "v3": {
+        "ok": true,
+        "game": "breakout",
+        "score": 25.0,
+        "gif": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/atari_breakout_v3_rollout.gif",
+        "steps": 1500,
+        "action_entropy": 1.8933352542254798
+      },
+      "compare_gif": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/atari_breakout_v2v3_compare.gif",
+      "score_delta": 25.0,
+      "aligned_env_steps": 324129,
+      "alignment": {
+        "game": "breakout",
+        "v2": {
+          "version": "v2",
+          "logdir": "/mnt/server12_hard0/kiseol/Dreamerv3/vendor/dreamerv3/logdir/atari_breakout_v2",
+          "logged_step": 1296516,
+          "env_steps": 324129,
+          "episodes": 931,
+          "ckpt_path": "/mnt/server12_hard0/kiseol/Dreamerv3/vendor/dreamerv3/logdir/atari_breakout_v2/variables.pkl",
+          "ckpt_env_steps": 324129
+        },
+        "v3": {
+          "version": "v3",
+          "logdir": "/mnt/server12_hard0/kiseol/Dreamerv3/vendor/dreamerv3/logdir/atari_breakout_v3",
+          "logged_step": 1999532,
+          "env_steps": 499883,
+          "episodes": 2025,
+          "ckpt_path": "/mnt/server12_hard0/kiseol/Dreamerv3/vendor/dreamerv3/logdir/atari_breakout_v3/ckpt/20260612T230550F485380",
+          "ckpt_env_steps": 489000
+        },
+        "aligned_env_steps": 324129,
+        "aligned_episodes": 931,
+        "fair_gif": false,
+        "note": "V3 main ckpt at 489000 env steps > aligned 324129; need aligned retrain in atari_breakout_v3_aligned"
+      }
+    },
+    "boxing": {
+      "ok": true,
+      "game": "boxing",
+      "v2": {
+        "ok": true,
+        "gif": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/atari_boxing_v2_rollout.gif",
+        "score": 32.0,
+        "steps": 1500,
+        "action_entropy": 1.9501243048372423
+      },
+      "v3": {
+        "ok": true,
+        "game": "boxing",
+        "score": 56.0,
+        "gif": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/atari_boxing_v3_rollout.gif",
+        "steps": 1500,
+        "action_entropy": 1.591410366435499
+      },
+      "compare_gif": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/atari_boxing_v2v3_compare.gif",
+      "score_delta": 24.0,
+      "aligned_env_steps": 498924,
+      "alignment": {
+        "game": "boxing",
+        "v2": {
+          "version": "v2",
+          "logdir": "/mnt/server12_hard0/kiseol/Dreamerv3/vendor/dreamerv3/logdir/atari_boxing_v2",
+          "logged_step": 2008388,
+          "env_steps": 502097,
+          "episodes": 281,
+          "ckpt_path": "/mnt/server12_hard0/kiseol/Dreamerv3/vendor/dreamerv3/logdir/atari_boxing_v2/snapshots/variables_0498533.pkl",
+          "ckpt_env_steps": 498533
+        },
+        "v3": {
+          "version": "v3",
+          "logdir": "/mnt/server12_hard0/kiseol/Dreamerv3/vendor/dreamerv3/logdir/atari_boxing_v3",
+          "logged_step": 1995696,
+          "env_steps": 498924,
+          "episodes": 290,
+          "ckpt_path": "/mnt/server12_hard0/kiseol/Dreamerv3/vendor/dreamerv3/logdir/atari_boxing_v3/ckpt/20260612T230555F104054",
+          "ckpt_env_steps": 475050
+        },
+        "aligned_env_steps": 498924,
+        "aligned_episodes": 281,
+        "fair_gif": true,
+        "note": "V2 using sidecar snapshot at 498533 env steps (aligned 498924) | Using main V3 ckpt at 475050 env steps"
+      }
+    }
+  },
+  "report": "/mnt/server12_hard0/kiseol/Dreamerv3/report/atari_compare/ATARI_COMPARE.md",
+  "wallclock_report": "/mnt/server12_hard0/kiseol/Dreamerv3/report/atari_compare/WALLCLOCK.md"
+}
