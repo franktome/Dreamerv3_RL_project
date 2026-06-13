@@ -13,7 +13,7 @@ sys.path.insert(0, str(WORKSPACE))
 GAMES = ('pong', 'breakout', 'boxing')
 HF_REPO = 'HyunseoYun/dreamerv3-custom-envs'
 
-V2_PATTERNS = ['variables.pkl', 'metrics.jsonl', 'config.yaml', 'snapshots/**']
+V2_PATTERNS = ['variables.pkl', 'metrics.jsonl', 'config.yaml']
 V3_PATTERNS = ['scores.jsonl', 'metrics.jsonl', 'config.yaml', 'ckpt/**']
 
 
