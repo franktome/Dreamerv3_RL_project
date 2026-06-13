@@ -1,0 +1,226 @@
+{
+  "ok": true,
+  "cached": true,
+  "logdir": "/mnt/server12_hard0/kiseol/Dreamerv3/vendor/dreamerv3/logdir/minecraft_diamond_full",
+  "n_rollouts": 8,
+  "checkpoint_id": "20260612T001414F342196",
+  "checkpoint_dir": "/mnt/server12_hard0/kiseol/Dreamerv3/vendor/dreamerv3/logdir/minecraft_diamond_full/ckpt/20260612T001414F342196",
+  "training_step": 1166324,
+  "best": {
+    "index": 2,
+    "seed": 102,
+    "gif": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/minecraft_rollouts/rollout_02_seed102.gif",
+    "strip_gif": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/minecraft_rollouts/rollout_02_seed102_strip.gif",
+    "gallery_png": "",
+    "milestones_dir": "",
+    "milestone_pngs": {},
+    "milestones_reached": [
+      "log",
+      "planks",
+      "stick",
+      "crafting_table"
+    ],
+    "milestone_count": 4,
+    "max_milestone": "wooden_pickaxe",
+    "reward": 4.0,
+    "steps": 3600,
+    "rank": 1
+  },
+  "top_k": [
+    {
+      "index": 2,
+      "seed": 102,
+      "gif": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/minecraft_rollouts/rollout_02_seed102.gif",
+      "strip_gif": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/minecraft_rollouts/rollout_02_seed102_strip.gif",
+      "gallery_png": "",
+      "milestones_dir": "",
+      "milestone_pngs": {},
+      "milestones_reached": [
+        "log",
+        "planks",
+        "stick",
+        "crafting_table"
+      ],
+      "milestone_count": 4,
+      "max_milestone": "wooden_pickaxe",
+      "reward": 4.0,
+      "steps": 3600,
+      "rank": 1
+    },
+    {
+      "index": 7,
+      "seed": 107,
+      "gif": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/minecraft_rollouts/rollout_07_seed107.gif",
+      "strip_gif": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/minecraft_rollouts/rollout_07_seed107_strip.gif",
+      "gallery_png": "",
+      "milestones_dir": "",
+      "milestone_pngs": {},
+      "milestones_reached": [
+        "log",
+        "planks",
+        "stick"
+      ],
+      "milestone_count": 3,
+      "max_milestone": "crafting_table",
+      "reward": 3.0,
+      "steps": 3600,
+      "rank": 2
+    },
+    {
+      "index": 6,
+      "seed": 106,
+      "gif": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/minecraft_rollouts/rollout_06_seed106.gif",
+      "strip_gif": "",
+      "gallery_png": "",
+      "milestones_dir": "",
+      "milestone_pngs": {},
+      "milestones_reached": [],
+      "milestone_count": 0,
+      "max_milestone": "log",
+      "reward": 0.0,
+      "steps": 3600,
+      "rank": 3
+    }
+  ],
+  "all_rollouts": [
+    {
+      "index": 2,
+      "seed": 102,
+      "gif": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/minecraft_rollouts/rollout_02_seed102.gif",
+      "strip_gif": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/minecraft_rollouts/rollout_02_seed102_strip.gif",
+      "gallery_png": "",
+      "milestones_dir": "",
+      "milestone_pngs": {},
+      "milestones_reached": [
+        "log",
+        "planks",
+        "stick",
+        "crafting_table"
+      ],
+      "milestone_count": 4,
+      "max_milestone": "wooden_pickaxe",
+      "reward": 4.0,
+      "steps": 3600,
+      "rank": 1
+    },
+    {
+      "index": 0,
+      "seed": 100,
+      "gif": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/minecraft_rollouts/rollout_00_seed100.gif",
+      "strip_gif": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/minecraft_rollouts/rollout_00_seed100_strip.gif",
+      "gallery_png": "",
+      "milestones_dir": "",
+      "milestone_pngs": {},
+      "milestones_reached": [
+        "log",
+        "planks",
+        "stick",
+        "crafting_table"
+      ],
+      "milestone_count": 4,
+      "max_milestone": "wooden_pickaxe",
+      "reward": 4.0,
+      "steps": 3600,
+      "rank": 3
+    },
+    {
+      "index": 7,
+      "seed": 107,
+      "gif": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/minecraft_rollouts/rollout_07_seed107.gif",
+      "strip_gif": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/minecraft_rollouts/rollout_07_seed107_strip.gif",
+      "gallery_png": "",
+      "milestones_dir": "",
+      "milestone_pngs": {},
+      "milestones_reached": [
+        "log",
+        "planks",
+        "stick"
+      ],
+      "milestone_count": 3,
+      "max_milestone": "crafting_table",
+      "reward": 3.0,
+      "steps": 3600,
+      "rank": 2
+    },
+    {
+      "index": 5,
+      "seed": 105,
+      "gif": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/minecraft_rollouts/rollout_05_seed105.gif",
+      "strip_gif": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/minecraft_rollouts/rollout_05_seed105_strip.gif",
+      "gallery_png": "",
+      "milestones_dir": "",
+      "milestone_pngs": {},
+      "milestones_reached": [
+        "log",
+        "planks",
+        "stick"
+      ],
+      "milestone_count": 3,
+      "max_milestone": "crafting_table",
+      "reward": 3.0,
+      "steps": 3600
+    },
+    {
+      "index": 6,
+      "seed": 106,
+      "gif": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/minecraft_rollouts/rollout_06_seed106.gif",
+      "strip_gif": "",
+      "gallery_png": "",
+      "milestones_dir": "",
+      "milestone_pngs": {},
+      "milestones_reached": [],
+      "milestone_count": 0,
+      "max_milestone": "log",
+      "reward": 0.0,
+      "steps": 3600,
+      "rank": 3
+    },
+    {
+      "index": 4,
+      "seed": 104,
+      "gif": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/minecraft_rollouts/rollout_04_seed104.gif",
+      "strip_gif": "",
+      "gallery_png": "",
+      "milestones_dir": "",
+      "milestone_pngs": {},
+      "milestones_reached": [],
+      "milestone_count": 0,
+      "max_milestone": "log",
+      "reward": 0.0,
+      "steps": 3600
+    },
+    {
+      "index": 3,
+      "seed": 103,
+      "gif": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/minecraft_rollouts/rollout_03_seed103.gif",
+      "strip_gif": "",
+      "gallery_png": "",
+      "milestones_dir": "",
+      "milestone_pngs": {},
+      "milestones_reached": [],
+      "milestone_count": 0,
+      "max_milestone": "log",
+      "reward": -0.01,
+      "steps": 624
+    },
+    {
+      "index": 1,
+      "seed": 101,
+      "gif": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/minecraft_rollouts/rollout_01_seed101.gif",
+      "strip_gif": "",
+      "gallery_png": "",
+      "milestones_dir": "",
+      "milestone_pngs": {},
+      "milestones_reached": [],
+      "milestone_count": 0,
+      "max_milestone": "log",
+      "reward": -0.01,
+      "steps": 882
+    }
+  ],
+  "main_gif": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/minecraft_diamond_rollout.gif",
+  "main_strip": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/minecraft_milestone_strip.gif",
+  "main_gallery": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/minecraft_milestone_gallery.png",
+  "index_path": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/minecraft_rollouts_index.json",
+  "max_steps": 3600
+}

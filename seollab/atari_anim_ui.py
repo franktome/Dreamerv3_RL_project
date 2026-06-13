@@ -88,10 +88,33 @@ def build_anim_index(cfg: PathConfig, games: tuple[str, ...]) -> dict:
     return index
 
 
+def _index_paths_stale(cfg: PathConfig, index: dict, games: tuple[str, ...]) -> bool:
+    """True when cached JSON points at GIFs outside this workspace clone."""
+    for game in games:
+        for preset in PRESETS:
+            entry = index.get('games', {}).get(game, {}).get(preset, {})
+            for key in ('grid_gif', 'baseline_compare_gif', 'perturbed_compare_gif'):
+                raw = entry.get(key, '')
+                if not raw:
+                    continue
+                p = Path(raw)
+                if not p.is_absolute():
+                    p = cfg.workspace / p
+                if not p.exists():
+                    return True
+                try:
+                    p.resolve().relative_to(cfg.workspace.resolve())
+                except ValueError:
+                    return True
+    return False
+
+
 def load_anim_index(cfg: PathConfig, games: tuple[str, ...]) -> dict:
     path = _index_path(cfg)
     if path.exists():
-        return json.loads(path.read_text())
+        index = json.loads(path.read_text())
+        if not _index_paths_stale(cfg, index, games):
+            return index
     return build_anim_index(cfg, games)
 
 

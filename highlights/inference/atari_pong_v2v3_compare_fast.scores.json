@@ -1,0 +1,11 @@
+{
+  "v2": -7.0,
+  "v3": -3.0,
+  "delta": 4.0,
+  "tag": "fast",
+  "env_overrides": {
+    "repeat": 2,
+    "sticky": 0.25,
+    "noops": 30
+  }
+}

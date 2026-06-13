@@ -9,7 +9,15 @@ MUJOCO_LOG.TXT
 logdir/
 dreamerv3_checkpoints/
 scores_cache/
-report/
-highlights/
+report/*
+!report/atari_compare/
+report/atari_compare/*
+!report/atari_compare/**
+!report/atari_*.png
+!report/minecraft_*.png
+highlights/*
+!highlights/inference/
+highlights/inference/*
+!highlights/inference/**
 merge_notebook.py
 test_highway_cells.py
