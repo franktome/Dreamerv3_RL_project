@@ -1,5 +1,5 @@
 # Atari 3-Game Compare — DreamerV2 vs DreamerV3
-Generated: 2026-06-13 05:47:38
+Generated: 2026-06-13 20:36:03
 
 ## Setup
 - Games: pong, breakout, boxing
@@ -12,8 +12,8 @@ Generated: 2026-06-13 05:47:38
 |------|-------|------------:|-----------:|---------:|
 | pong | DreamerV2 | -20.71 | -18.00 | 613 |
 | pong | DreamerV3 | -20.04 | -13.00 | 471 |
-| breakout | DreamerV2 | 1.74 | 11.00 | 931 |
-| breakout | DreamerV3 | 2.71 | 9.00 | 1454 |
+| breakout | DreamerV2 | 1.73 | 11.00 | 960 |
+| breakout | DreamerV3 | 3.32 | 10.00 | 2020 |
 | boxing | DreamerV2 | 15.94 | 71.00 | 279 |
 | boxing | DreamerV3 | 32.04 | 85.00 | 290 |
 
@@ -25,7 +25,7 @@ Generated: 2026-06-13 05:47:38
 | Game | V2 env steps | V2 episodes | V3 env steps | V3 episodes | Aligned env steps | Aligned episodes | fair_gif |
 |------|-------------:|------------:|-------------:|------------:|------------------:|-----------------:|:--------:|
 | pong | 503224 | 619 | 498561 | 471 | 498561 | 471 | ✅ |
-| breakout | 324129 | 931 | 499883 | 2025 | 324129 | 931 | ⚠️ |
+| breakout | 498236 | 960 | 499883 | 2025 | 498236 | 960 | ✅ |
 | boxing | 502097 | 281 | 498924 | 290 | 498924 | 281 | ✅ |
 
 ## Inference GIFs
@@ -43,7 +43,7 @@ Side-by-side rollouts: `highlights/inference/atari_{game}_v2v3_compare.gif`
 ## Analysis
 
 - **pong**: V3 mean return − V2 = +0.67
-- **breakout**: V3 mean return − V2 = +0.97
+- **breakout**: V3 mean return − V2 = +1.59
 - **boxing**: V3 mean return − V2 = +16.10
 
 ## Plots

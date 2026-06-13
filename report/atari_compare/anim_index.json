@@ -29,9 +29,15 @@
         "perturbed_compare_gif": "",
         "scores": {
           "baseline": {
-            "v2": -41.0,
-            "v3": -41.0,
-            "delta": 0.0
+            "v2": -16.0,
+            "v3": -4.0,
+            "delta": 12.0,
+            "tag": "baseline",
+            "env_overrides": {
+              "repeat": 4,
+              "sticky": 0.25,
+              "noops": 30
+            }
           }
         }
       },
@@ -43,10 +49,29 @@
         "perturbed_compare_gif": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/atari_pong_v2v3_compare_fast.gif",
         "scores": {
           "baseline": {
-            "v2": -41.0,
-            "v3": -41.0,
-            "delta": 0.0
-          }
+            "v2": -16.0,
+            "v3": -4.0,
+            "delta": 12.0,
+            "tag": "baseline",
+            "env_overrides": {
+              "repeat": 4,
+              "sticky": 0.25,
+              "noops": 30
+            }
+          },
+          "perturbed": {
+            "v2": -7.0,
+            "v3": -3.0,
+            "delta": 4.0,
+            "tag": "fast",
+            "env_overrides": {
+              "repeat": 2,
+              "sticky": 0.25,
+              "noops": 30
+            }
+          },
+          "delta_v2": 9.0,
+          "delta_v3": 1.0
         }
       },
       "sluggish": {
@@ -57,10 +82,29 @@
         "perturbed_compare_gif": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/atari_pong_v2v3_compare_sluggish.gif",
         "scores": {
           "baseline": {
-            "v2": -41.0,
-            "v3": -41.0,
-            "delta": 0.0
-          }
+            "v2": -16.0,
+            "v3": -4.0,
+            "delta": 12.0,
+            "tag": "baseline",
+            "env_overrides": {
+              "repeat": 4,
+              "sticky": 0.25,
+              "noops": 30
+            }
+          },
+          "perturbed": {
+            "v2": -16.0,
+            "v3": -8.0,
+            "delta": 8.0,
+            "tag": "sluggish",
+            "env_overrides": {
+              "repeat": 4,
+              "sticky": 0.5,
+              "noops": 30
+            }
+          },
+          "delta_v2": 0.0,
+          "delta_v3": -4.0
         }
       }
     },
@@ -73,9 +117,15 @@
         "perturbed_compare_gif": "",
         "scores": {
           "baseline": {
-            "v2": 2.0,
-            "v3": 15.0,
-            "delta": 13.0
+            "v2": 0.0,
+            "v3": 7.0,
+            "delta": 7.0,
+            "tag": "baseline",
+            "env_overrides": {
+              "repeat": 4,
+              "sticky": 0.25,
+              "noops": 30
+            }
           }
         }
       },
@@ -87,10 +137,29 @@
         "perturbed_compare_gif": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/atari_breakout_v2v3_compare_fast.gif",
         "scores": {
           "baseline": {
-            "v2": 2.0,
-            "v3": 15.0,
-            "delta": 13.0
-          }
+            "v2": 0.0,
+            "v3": 7.0,
+            "delta": 7.0,
+            "tag": "baseline",
+            "env_overrides": {
+              "repeat": 4,
+              "sticky": 0.25,
+              "noops": 30
+            }
+          },
+          "perturbed": {
+            "v2": 0.0,
+            "v3": 6.0,
+            "delta": 6.0,
+            "tag": "fast",
+            "env_overrides": {
+              "repeat": 2,
+              "sticky": 0.25,
+              "noops": 30
+            }
+          },
+          "delta_v2": 0,
+          "delta_v3": -1.0
         }
       },
       "sluggish": {
@@ -101,10 +170,29 @@
         "perturbed_compare_gif": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/atari_breakout_v2v3_compare_sluggish.gif",
         "scores": {
           "baseline": {
-            "v2": 2.0,
-            "v3": 15.0,
-            "delta": 13.0
-          }
+            "v2": 0.0,
+            "v3": 7.0,
+            "delta": 7.0,
+            "tag": "baseline",
+            "env_overrides": {
+              "repeat": 4,
+              "sticky": 0.25,
+              "noops": 30
+            }
+          },
+          "perturbed": {
+            "v2": 0.0,
+            "v3": 11.0,
+            "delta": 11.0,
+            "tag": "sluggish",
+            "env_overrides": {
+              "repeat": 4,
+              "sticky": 0.5,
+              "noops": 30
+            }
+          },
+          "delta_v2": 0,
+          "delta_v3": 4.0
         }
       }
     },
@@ -117,9 +205,15 @@
         "perturbed_compare_gif": "",
         "scores": {
           "baseline": {
-            "v2": -17.0,
-            "v3": 1.0,
-            "delta": 18.0
+            "v2": 17.0,
+            "v3": 12.0,
+            "delta": -5.0,
+            "tag": "baseline",
+            "env_overrides": {
+              "repeat": 4,
+              "sticky": 0.25,
+              "noops": 30
+            }
           }
         }
       },
@@ -131,10 +225,29 @@
         "perturbed_compare_gif": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/atari_boxing_v2v3_compare_fast.gif",
         "scores": {
           "baseline": {
-            "v2": -17.0,
-            "v3": 1.0,
-            "delta": 18.0
-          }
+            "v2": 17.0,
+            "v3": 12.0,
+            "delta": -5.0,
+            "tag": "baseline",
+            "env_overrides": {
+              "repeat": 4,
+              "sticky": 0.25,
+              "noops": 30
+            }
+          },
+          "perturbed": {
+            "v2": 2.0,
+            "v3": -16.0,
+            "delta": -18.0,
+            "tag": "fast",
+            "env_overrides": {
+              "repeat": 2,
+              "sticky": 0.25,
+              "noops": 30
+            }
+          },
+          "delta_v2": -15.0,
+          "delta_v3": -28.0
         }
       },
       "sluggish": {
@@ -145,10 +258,29 @@
         "perturbed_compare_gif": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/atari_boxing_v2v3_compare_sluggish.gif",
         "scores": {
           "baseline": {
-            "v2": -17.0,
-            "v3": 1.0,
-            "delta": 18.0
-          }
+            "v2": 17.0,
+            "v3": 12.0,
+            "delta": -5.0,
+            "tag": "baseline",
+            "env_overrides": {
+              "repeat": 4,
+              "sticky": 0.25,
+              "noops": 30
+            }
+          },
+          "perturbed": {
+            "v2": 10.0,
+            "v3": 6.0,
+            "delta": -4.0,
+            "tag": "sluggish",
+            "env_overrides": {
+              "repeat": 4,
+              "sticky": 0.5,
+              "noops": 30
+            }
+          },
+          "delta_v2": -7.0,
+          "delta_v3": -6.0
         }
       }
     }

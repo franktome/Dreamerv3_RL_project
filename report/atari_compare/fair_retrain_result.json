@@ -14,15 +14,15 @@
     },
     {
       "game": "breakout",
-      "v2_env_steps": 324129,
-      "v2_episodes": 931,
+      "v2_env_steps": 498236,
+      "v2_episodes": 960,
       "v3_env_steps": 499883,
       "v3_episodes": 2025,
       "v3_ckpt_env_steps": 489000,
-      "aligned_env_steps": 324129,
-      "aligned_episodes": 931,
-      "fair_gif": false,
-      "note": "V3 main ckpt at 489000 env steps > aligned 324129; need aligned retrain in atari_breakout_v3_aligned"
+      "aligned_env_steps": 498236,
+      "aligned_episodes": 960,
+      "fair_gif": true,
+      "note": "Using main V3 ckpt at 489000 env steps"
     },
     {
       "game": "boxing",
@@ -51,13 +51,13 @@
       "v3": {
         "ok": true,
         "game": "pong",
-        "score": -14.0,
+        "score": -15.0,
         "gif": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/atari_pong_v3_rollout.gif",
         "steps": 1500,
-        "action_entropy": 1.7174919137000406
+        "action_entropy": 1.6355735516922045
       },
       "compare_gif": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/atari_pong_v2v3_compare.gif",
-      "score_delta": 27.0,
+      "score_delta": 26.0,
       "aligned_env_steps": 498561,
       "alignment": {
         "game": "pong",
@@ -93,7 +93,7 @@
         "gif": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/atari_breakout_v2_rollout.gif",
         "score": 0.0,
         "steps": 1500,
-        "action_entropy": 0.0694004282828323
+        "action_entropy": -1.000088900581841e-12
       },
       "v3": {
         "ok": true,
@@ -101,21 +101,21 @@
         "score": 25.0,
         "gif": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/atari_breakout_v3_rollout.gif",
         "steps": 1500,
-        "action_entropy": 1.8933352542254798
+        "action_entropy": 2.0522178118915506
       },
       "compare_gif": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/atari_breakout_v2v3_compare.gif",
       "score_delta": 25.0,
-      "aligned_env_steps": 324129,
+      "aligned_env_steps": 498236,
       "alignment": {
         "game": "breakout",
         "v2": {
           "version": "v2",
           "logdir": "/mnt/server12_hard0/kiseol/Dreamerv3/vendor/dreamerv3/logdir/atari_breakout_v2",
-          "logged_step": 1296516,
-          "env_steps": 324129,
-          "episodes": 931,
+          "logged_step": 1992944,
+          "env_steps": 498236,
+          "episodes": 960,
           "ckpt_path": "/mnt/server12_hard0/kiseol/Dreamerv3/vendor/dreamerv3/logdir/atari_breakout_v2/variables.pkl",
-          "ckpt_env_steps": 324129
+          "ckpt_env_steps": 498236
         },
         "v3": {
           "version": "v3",
@@ -126,10 +126,10 @@
           "ckpt_path": "/mnt/server12_hard0/kiseol/Dreamerv3/vendor/dreamerv3/logdir/atari_breakout_v3/ckpt/20260612T230550F485380",
           "ckpt_env_steps": 489000
         },
-        "aligned_env_steps": 324129,
-        "aligned_episodes": 931,
-        "fair_gif": false,
-        "note": "V3 main ckpt at 489000 env steps > aligned 324129; need aligned retrain in atari_breakout_v3_aligned"
+        "aligned_env_steps": 498236,
+        "aligned_episodes": 960,
+        "fair_gif": true,
+        "note": "Using main V3 ckpt at 489000 env steps"
       }
     },
     "boxing": {
@@ -138,20 +138,20 @@
       "v2": {
         "ok": true,
         "gif": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/atari_boxing_v2_rollout.gif",
-        "score": 32.0,
+        "score": 16.0,
         "steps": 1500,
-        "action_entropy": 1.9501243048372423
+        "action_entropy": 1.9591067923505032
       },
       "v3": {
         "ok": true,
         "game": "boxing",
-        "score": 56.0,
+        "score": 87.0,
         "gif": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/atari_boxing_v3_rollout.gif",
         "steps": 1500,
-        "action_entropy": 1.591410366435499
+        "action_entropy": 1.5736549119012238
       },
       "compare_gif": "/mnt/server12_hard0/kiseol/Dreamerv3/highlights/inference/atari_boxing_v2v3_compare.gif",
-      "score_delta": 24.0,
+      "score_delta": 71.0,
       "aligned_env_steps": 498924,
       "alignment": {
         "game": "boxing",

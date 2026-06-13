@@ -6,7 +6,7 @@ Aligned step = `min(V2, V3)` per game. GIFs should use checkpoints at or before 
 | Game | V2 steps | V2 ep | V3 steps | V3 ckpt | Aligned | Fair GIF? | Note |
 |------|----------|-------|----------|---------|---------|-----------|------|
 | pong | 503,224 | 619 | 498,561 | 497390 | **498,561** | ✅ | V2 using sidecar snapshot at 480476 env steps (aligned 498561) | Using main V3 ckpt at 497390 env steps |
-| breakout | 324,129 | 931 | 499,883 | 489000 | **324,129** | ⚠️ | V3 main ckpt at 489000 env steps > aligned 324129; need aligned retrain in atari_breakout_v3_aligned |
+| breakout | 498,236 | 960 | 499,883 | 489000 | **498,236** | ✅ | Using main V3 ckpt at 489000 env steps |
 | boxing | 502,097 | 281 | 498,924 | 475050 | **498,924** | ✅ | V2 using sidecar snapshot at 498533 env steps (aligned 498924) | Using main V3 ckpt at 475050 env steps |
 
 ## Step-by-step

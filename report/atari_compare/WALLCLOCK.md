@@ -1,6 +1,6 @@
 # Atari Fair Retrain — Wall-Clock Comparison
 
-Generated: 2026-06-13 05:47:44 KST
+Generated: 2026-06-13 20:36:03 KST
 
 Phase 1: fair 100k run | Phase 2: extend 500k / 8h resume.
 Per-job wall-clock (phase1 + phase2). Jobs on GPU0 (V2) and GPU1 (V3) run **in parallel**.
